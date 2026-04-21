@@ -1,0 +1,12 @@
+# ─────────────────────────────────────────
+# Frontend 의존성 목록
+# ─────────────────────────────────────────
+
+# Streamlit UI 프레임워크
+streamlit>=1.32.0
+
+# 백엔드 API 호출 (requests.post, get, delete, put)
+requests>=2.31.0
+
+# .env 파일 로드 (BACKEND_URL 등 환경변수)
+python-dotenv>=1.0.0

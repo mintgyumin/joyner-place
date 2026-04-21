@@ -1,0 +1,61 @@
+# ─────────────────────────────────────────
+# JOYNER Place — docker-compose.yml
+# ─────────────────────────────────────────
+# 실행: docker-compose up --build
+# 중지: docker-compose down
+#
+# 서비스 구조:
+#   backend  → FastAPI (포트 8000) — AI 추천, 인증, DB
+#   frontend → Streamlit (포트 8501) — UI, backend에 HTTP 요청
+
+services:
+
+  # ── 백엔드 서비스 ─────────────────────────────────────────────
+  backend:
+    # backend/ 폴더의 Dockerfile로 이미지 빌드
+    build: ./backend
+
+    # 포트 매핑: 호스트 8000 → 컨테이너 8000
+    ports:
+      - "8000:8000"
+
+    # .env 파일에서 API 키 주입 (OPENAI_API_KEY, KAKAO_API_KEY 등)
+    env_file:
+      - .env
+
+    # JWT 시크릿 키 (운영 환경에서는 강력한 랜덤 문자열로 변경 권장)
+    environment:
+      - JWT_SECRET_KEY=joyner-secret-change-in-production
+
+    volumes:
+      # DB + users.yaml을 ./data 폴더에 통합 관리
+      # 컨테이너 재시작/삭제 후에도 데이터 유지
+      - ./data:/app/data
+
+      # users.yaml 파일 마운트 → 로컬에서 수정하면 컨테이너에 즉시 반영
+      # 파일이 없으면 backend/auth.py가 자동 생성 (데모 계정 포함)
+      - ./backend/users.yaml:/app/users.yaml
+
+    restart: unless-stopped
+
+  # ── 프론트엔드 서비스 ──────────────────────────────────────────
+  frontend:
+    # frontend/ 폴더의 Dockerfile로 이미지 빌드
+    build: ./frontend
+
+    # 포트 매핑: 호스트 8501 → 컨테이너 8501
+    # 브라우저에서 http://localhost:8501 로 접속
+    ports:
+      - "8501:8501"
+
+    environment:
+      # docker-compose 내부 네트워크에서 서비스명(backend)으로 접근
+      # 컨테이너끼리는 서비스 이름을 hostname으로 사용한다
+      - BACKEND_URL=http://backend:8000
+
+    # backend가 먼저 시작된 뒤 frontend를 시작
+    depends_on:
+      - backend
+
+    restart: unless-stopped
+

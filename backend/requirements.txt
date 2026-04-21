@@ -1,0 +1,33 @@
+# ─────────────────────────────────────────
+# Backend 의존성 목록
+# ─────────────────────────────────────────
+
+# FastAPI 웹 프레임워크
+fastapi>=0.110.0
+
+# ASGI 서버 (uvicorn[standard]은 websocket 등 추가 기능 포함)
+uvicorn[standard]>=0.29.0
+
+# JWT 토큰 생성·검증 (python-jose의 cryptography 백엔드 사용)
+python-jose[cryptography]>=3.3.0
+
+# bcrypt 비밀번호 해시
+bcrypt>=4.0.0
+
+# users.yaml 읽기/쓰기
+PyYAML>=6.0
+
+# OpenAI API (임베딩 + GPT)
+openai>=1.0.0
+
+# FAISS 벡터 유사도 검색
+faiss-cpu>=1.7.4
+
+# numpy (FAISS는 float32 배열을 요구)
+numpy<2.0
+
+# HTTP 요청 (카카오 API 호출)
+requests>=2.31.0
+
+# .env 파일 로드
+python-dotenv>=1.0.0
