@@ -1,0 +1,80 @@
+{
+  "test_cases": [
+    {
+      "id": "test_001",
+      "input": {
+        "location": "강남역",
+        "purpose": "팀 회식",
+        "time_slot": "저녁 (17:00~21:00)",
+        "people_count": 4
+      },
+      "expected": {
+        "min_results": 1,
+        "max_results": 5,
+        "relevant_categories": ["음식점", "레스토랑", "한식", "일식", "양식"],
+        "requirements": ["4인 이상 수용", "저녁 시간 운영"]
+      }
+    },
+    {
+      "id": "test_002",
+      "input": {
+        "location": "홍대",
+        "purpose": "친구 모임",
+        "time_slot": "점심 (11:00~14:00)",
+        "people_count": 2
+      },
+      "expected": {
+        "min_results": 1,
+        "max_results": 5,
+        "relevant_categories": ["카페", "음식점", "브런치"],
+        "requirements": ["2인 모임 가능", "점심 시간 운영"]
+      }
+    },
+    {
+      "id": "test_003",
+      "input": {
+        "locations": ["강남역", "홍대입구"],
+        "location": "",
+        "purpose": "스터디",
+        "time_slot": "오후 (14:00~17:00)",
+        "people_count": 3
+      },
+      "expected": {
+        "min_results": 1,
+        "max_results": 5,
+        "relevant_categories": ["카페", "스터디카페", "북카페"],
+        "requirements": ["조용한 분위기", "오후 운영", "3인 이상 좌석"]
+      }
+    },
+    {
+      "id": "test_004",
+      "input": {
+        "location": "판교역",
+        "purpose": "볼링",
+        "time_slot": "저녁 (17:00~21:00)",
+        "people_count": 6
+      },
+      "expected": {
+        "min_results": 1,
+        "max_results": 5,
+        "relevant_categories": ["볼링장", "스포츠"],
+        "requirements": ["6인 이상 수용", "저녁 이용 가능"]
+      }
+    },
+    {
+      "id": "test_005",
+      "input": {
+        "location": "이태원",
+        "purpose": "데이트",
+        "time_slot": "저녁 (17:00~21:00)",
+        "people_count": 2
+      },
+      "expected": {
+        "min_results": 1,
+        "max_results": 5,
+        "relevant_categories": ["카페", "레스토랑", "바"],
+        "requirements": ["2인 데이트 분위기", "저녁 운영", "아늑한 분위기"]
+      }
+    }
+  ]
+}

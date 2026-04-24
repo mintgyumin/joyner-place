@@ -49,18 +49,24 @@ class PlaceSearchRequest(BaseModel):
 
 class PlaceResult(BaseModel):
     """추천 결과 카드 한 장에 담길 장소 정보"""
-    place_name: str     # 장소명
-    category: str       # 카테고리 최말단 (예: "카페")
-    address: str        # 도로명 또는 지번 주소
-    distance: str       # 중심 좌표에서의 거리 (예: "42")
-    place_url: str      # 카카오맵 URL
-    reason: str         # GPT가 생성한 추천 이유
+    place_name: str          # 장소명
+    category: str            # 카테고리 최말단 (예: "카페")
+    address: str             # 도로명 또는 지번 주소
+    distance: str            # 중심 좌표에서의 거리 (예: "42")
+    place_url: str           # 카카오맵 URL
+    reason: str              # GPT가 생성한 추천 이유
+    tags: list[str] = []     # GPT가 생성한 특징 태그 (예: ["#조용한분위기", "#주차가능"])
+    lat: float | None = None  # 위도 (지도 핀 표시용)
+    lng: float | None = None  # 경도 (지도 핀 표시용)
 
 
 class RecommendResponse(BaseModel):
     """장소 추천 API 응답"""
-    places: list[PlaceResult]       # 추천 장소 3개
-    midpoint: str | None = None     # 다중 참여자 모드일 때 중간지점 주소
+    places: list[PlaceResult]                    # 추천 장소 목록
+    midpoint: str | None = None                  # 다중 참여자 모드일 때 중간지점 주소
+    midpoint_lat: float | None = None            # 중간지점 위도
+    midpoint_lng: float | None = None            # 중간지점 경도
+    participant_coords: list[dict] | None = None  # 참여자 출발지 좌표 목록
 
 
 # ─────────────────────────────────────────

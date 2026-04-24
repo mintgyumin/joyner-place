@@ -5,8 +5,16 @@
 # 중지: docker-compose down
 #
 # 서비스 구조:
-#   backend  → FastAPI (포트 8000) — AI 추천, 인증, DB
-#   frontend → Streamlit (포트 8501) — UI, backend에 HTTP 요청
+#   backend        → FastAPI (포트 8000) — AI 추천, 인증, DB
+#   frontend       → Streamlit (포트 8501) — UI, backend에 HTTP 요청
+#   agent-backend  → FastAPI (포트 8001) — Agent (OpenAI Function Calling)
+#   agent-frontend → Streamlit (포트 8502) — Agent 채팅 UI
+#
+# 네트워크: 4개 서비스 모두 joyner-net으로 연결
+
+networks:
+  joyner-net:
+    driver: bridge
 
 services:
 
@@ -36,6 +44,9 @@ services:
       # 파일이 없으면 backend/auth.py가 자동 생성 (데모 계정 포함)
       - ./backend/users.yaml:/app/users.yaml
 
+    networks:
+      - joyner-net
+
     restart: unless-stopped
 
   # ── 프론트엔드 서비스 ──────────────────────────────────────────
@@ -50,12 +61,61 @@ services:
 
     environment:
       # docker-compose 내부 네트워크에서 서비스명(backend)으로 접근
-      # 컨테이너끼리는 서비스 이름을 hostname으로 사용한다
       - BACKEND_URL=http://backend:8000
+      # 카카오맵 JavaScript SDK 키 (.env에서 주입)
+      - KAKAO_JS_KEY=${KAKAO_JS_KEY}
 
     # backend가 먼저 시작된 뒤 frontend를 시작
     depends_on:
       - backend
+
+    networks:
+      - joyner-net
+
+    restart: unless-stopped
+
+  # ── Agent 백엔드 서비스 ─────────────────────────────────────────
+  agent-backend:
+    build: ./agent/backend
+
+    ports:
+      - "8001:8001"
+
+    env_file:
+      - .env
+
+    environment:
+      - JWT_SECRET_KEY=joyner-agent-secret-change-in-production
+
+    volumes:
+      # 회원 데이터 영속화 — 재배포 후에도 가입 정보 유지
+      - ./agent/backend/users.yaml:/app/users.yaml
+
+    networks:
+      - joyner-net
+
+    restart: unless-stopped
+
+  # ── Agent 프론트엔드 서비스 ─────────────────────────────────────
+  agent-frontend:
+    build: ./agent/frontend
+
+    ports:
+      - "8502:8502"
+
+    environment:
+      - AGENT_BACKEND_URL=http://agent-backend:8001
+      - KAKAO_JS_KEY=${KAKAO_JS_KEY}
+
+    volumes:
+      # 코드 변경 시 재빌드 없이 즉시 반영
+      - ./agent/frontend:/app
+
+    depends_on:
+      - agent-backend
+
+    networks:
+      - joyner-net
 
     restart: unless-stopped
 

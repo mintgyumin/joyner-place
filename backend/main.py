@@ -124,7 +124,7 @@ def recommend(
 ):
     """
     AI 장소 추천 파이프라인을 실행한다.
-    (카카오 검색 → 임베딩 → FAISS → GPT 추천 이유)
+    (카카오 검색 → Contextual Embedding → Hybrid Search → Reranking → GPT 추천 이유 + 태그)
     실패 시 400 Bad Request 반환.
     """
     try:

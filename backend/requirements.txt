@@ -31,3 +31,6 @@ requests>=2.31.0
 
 # .env 파일 로드
 python-dotenv>=1.0.0
+
+# BM25 키워드 검색 (Hybrid Search용)
+rank_bm25>=0.2.2

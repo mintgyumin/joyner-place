@@ -1,0 +1,431 @@
+{
+  "generated_at": "2026-04-22T10:48:32.079396",
+  "total_cases": 5,
+  "success_cases": 4,
+  "error_cases": 1,
+  "aggregate": {
+    "avg_scores": {
+      "precision_at_k": 0.7,
+      "faithfulness": 1.0,
+      "requirement_coverage": 0.85,
+      "average": 0.85
+    },
+    "rule_pass_rate": 1.0
+  },
+  "results": [
+    {
+      "id": "test_001",
+      "input": {
+        "location": "강남역",
+        "purpose": "팀 회식",
+        "time_slot": "저녁 (17:00~21:00)",
+        "people_count": 4
+      },
+      "error": false,
+      "places": [
+        {
+          "place_name": "포490베트남쌀국수 강남점",
+          "category": "베트남음식",
+          "address": "서울 강남구 강남대로 지하 396",
+          "distance": "22",
+          "place_url": "http://place.map.kakao.com/213270949",
+          "reason": "이곳은 베트남 음식을 전문으로 하는 식당으로, 팀 회식에 적합한 다양한 메뉴를 제공합니다. 강남역에서 22m 거리에 위치해 있어 접근성이 좋으며, 아늑한 분위기에서 식사를 즐기기에 적합합니다.",
+          "tags": [
+            "#베트남음식",
+            "#쌀국수",
+            "#매운맛"
+          ],
+          "lat": 37.4980007956522,
+          "lng": 127.027769546798
+        },
+        {
+          "place_name": "일월분식",
+          "category": "분식",
+          "address": "서울 강남구 강남대로 지하 396",
+          "distance": "28",
+          "place_url": "http://place.map.kakao.com/1300037604",
+          "reason": "분식 전문점인 일월분식은 가벼운 회식이나 간단한 식사를 원할 때 좋은 선택입니다. 강남역 지하 396에서 28m 거리에 위치해 있어 쉽게 찾아갈 수 있으며, 친근한 분위기가 팀원들과의 대화에 좋습니다.",
+          "tags": [
+            "#분식",
+            "#간편식",
+            "#저렴한가격"
+          ],
+          "lat": 37.498164651039694,
+          "lng": 127.02830790088069
+        },
+        {
+          "place_name": "현주네",
+          "category": "분식",
+          "address": "서울 서초구 강남대로 399",
+          "distance": "104",
+          "place_url": "http://place.map.kakao.com/1699215494",
+          "reason": "현주네는 맛있는 분식 메뉴를 제공하는 곳으로, 팀 회식에 편안한 분위기를 제공합니다. 서초구 강남대로 399에 위치해 있으며, 강남역에서 104m 거리에 있어 이동이 용이합니다.",
+          "tags": [
+            "#분식",
+            "#가정식",
+            "#따뜻한음식"
+          ],
+          "lat": 37.4982659058478,
+          "lng": 127.026842331546
+        },
+        {
+          "place_name": "백미당 강남역점",
+          "category": "백미당",
+          "address": "서울 강남구 강남대로 402",
+          "distance": "78",
+          "place_url": "http://place.map.kakao.com/1076316302",
+          "reason": "백미당은 디저트 카페로 유명하며, 저녁 시간대에도 달콤한 디저트를 즐길 수 있습니다. 강남역 402번지에서 78m 거리에 위치해 있어 쉽게 접근할 수 있으며, 분위기가 아늑하여 팀 회식 후 여유로운 시간을 보내기에 적합합니다.",
+          "tags": [
+            "#디저트",
+            "#카페",
+            "#아늑한분위기"
+          ],
+          "lat": 37.4987765476693,
+          "lng": 127.027830901464
+        },
+        {
+          "place_name": "레이지레이디 케이크",
+          "category": "디저트카페",
+          "address": "서울 강남구 테헤란로4길 6",
+          "distance": "102",
+          "place_url": "http://place.map.kakao.com/131020261",
+          "reason": "이곳은 테마카페로 독특한 케이크와 음료를 제공하며, 팀원들과의 회식 후 디저트를 즐기기 좋은 장소입니다. 강남구 테헤란로4길 6에 위치해 있고, 강남역에서 102m 거리에 있어 편리하게 방문할 수 있습니다.",
+          "tags": [
+            "#디저트카페",
+            "#케이크",
+            "#달콤한맛"
+          ],
+          "lat": 37.497630184743244,
+          "lng": 127.02900657088206
+        }
+      ],
+      "scores": {
+        "precision_at_k": 0.4,
+        "faithfulness": 1.0,
+        "requirement_coverage": 0.75,
+        "average": 0.717
+      },
+      "rules": {
+        "result_count_ok": true,
+        "no_duplicate": true,
+        "all_have_address": true,
+        "all_have_url": true,
+        "all_have_reason": true,
+        "overall_pass": true
+      }
+    },
+    {
+      "id": "test_002",
+      "input": {
+        "location": "홍대",
+        "purpose": "친구 모임",
+        "time_slot": "점심 (11:00~14:00)",
+        "people_count": 2
+      },
+      "error": false,
+      "places": [
+        {
+          "place_name": "자유인들",
+          "category": "카페",
+          "address": "서울 마포구 와우산로22길 34",
+          "distance": "121",
+          "place_url": "http://place.map.kakao.com/1342039790",
+          "reason": "자유인들은 아늑한 분위기의 카페로, 친구와의 편안한 대화를 나누기에 적합합니다. 주소는 서울 마포구 와우산로22길 34에 위치하며, 홍대에서 121m 거리에 있어 접근성이 좋습니다.",
+          "tags": [
+            "#아늑한분위기",
+            "#맛있는커피",
+            "#편안한좌석"
+          ],
+          "lat": 37.55102533521771,
+          "lng": 126.92418738864549
+        },
+        {
+          "place_name": "모두의모임 홍대점",
+          "category": "카페",
+          "address": "서울 마포구 와우산로 63",
+          "distance": "245",
+          "place_url": "http://place.map.kakao.com/1096025132",
+          "reason": "모두의모임은 다양한 음료와 디저트를 제공하는 카페로, 친구와의 소중한 시간을 보내기에 알맞은 장소입니다. 서울 마포구 와우산로 63에 위치하고, 홍대에서 245m 떨어져 있어 편리합니다.",
+          "tags": [
+            "#활기찬분위기",
+            "#다양한메뉴",
+            "#소셜미디어인증"
+          ],
+          "lat": 37.5502730553136,
+          "lng": 126.922878825676
+        },
+        {
+          "place_name": "꾸울과자점",
+          "category": "카페",
+          "address": "서울 마포구 와우산로22길 70",
+          "distance": "206",
+          "place_url": "http://place.map.kakao.com/1612697734",
+          "reason": "꾸울과자점은 맛있는 과자와 함께 커피를 즐길 수 있는 카페로, 친구와의 모임에 적합한 따뜻한 분위기를 제공합니다. 서울 마포구 와우산로22길 70에 위치하며, 홍대에서 206m 거리에 있습니다.",
+          "tags": [
+            "#수제디저트",
+            "#아기자기한인테리어",
+            "#조용한공간"
+          ],
+          "lat": 37.5494215026899,
+          "lng": 126.924100745002
+        },
+        {
+          "place_name": "시러피하우스",
+          "category": "커피전문점",
+          "address": "서울 마포구 독막로19길 8-17",
+          "distance": "252",
+          "place_url": "http://place.map.kakao.com/77274259",
+          "reason": "시러피하우스는 커피 전문점으로, 다양한 커피 메뉴와 아늑한 분위기가 매력적입니다. 서울 마포구 독막로19길 8-17에 위치하여 홍대에서 252m 거리에 있어 모임에 적합합니다.",
+          "tags": [
+            "#전문커피",
+            "#고급스러운인테리어",
+            "#바리스타추천"
+          ],
+          "lat": 37.5486042374059,
+          "lng": 126.92542105411
+        },
+        {
+          "place_name": "반지만들기카페 커반 홍대점",
+          "category": "미술,공예",
+          "address": "서울 마포구 와우산로 91",
+          "distance": "253",
+          "place_url": "http://place.map.kakao.com/25779441",
+          "reason": "반지만들기카페 커반은 친구와 함께 특별한 경험을 할 수 있는 공간으로, 창의적인 활동과 함께 음료를 즐길 수 있습니다. 서울 마포구 와우산로 91에 위치하고, 홍대에서 253m 떨어져 있어 접근하기 좋습니다.",
+          "tags": [
+            "#창의적인체험",
+            "#미술공예",
+            "#가족친화적"
+          ],
+          "lat": 37.5527298213336,
+          "lng": 126.92387331505
+        }
+      ],
+      "scores": {
+        "precision_at_k": 0.6,
+        "faithfulness": 1.0,
+        "requirement_coverage": 0.9,
+        "average": 0.833
+      },
+      "rules": {
+        "result_count_ok": true,
+        "no_duplicate": true,
+        "all_have_address": true,
+        "all_have_url": true,
+        "all_have_reason": true,
+        "overall_pass": true
+      }
+    },
+    {
+      "id": "test_003",
+      "input": {
+        "locations": [
+          "강남역",
+          "홍대입구"
+        ],
+        "location": "",
+        "purpose": "스터디",
+        "time_slot": "오후 (14:00~17:00)",
+        "people_count": 3
+      },
+      "error": false,
+      "places": [
+        {
+          "place_name": "티라멜르",
+          "category": "디저트카페",
+          "address": "서울 용산구 한강대로40길 43",
+          "distance": "480",
+          "place_url": "http://place.map.kakao.com/1349499968",
+          "reason": "티라멜르는 아늑하고 독특한 테마가 있는 디저트 카페로, 스터디에 적합한 조용한 분위기를 제공합니다. 주소는 서울 용산구 한강대로40길 43이며, 거리도 480m로 가까워 접근성이 좋습니다.",
+          "tags": [
+            "#디저트맛집",
+            "#아늑한분위기",
+            "#인스타그램명소"
+          ],
+          "lat": 37.5302142588269,
+          "lng": 126.971679991293
+        },
+        {
+          "place_name": "파크15",
+          "category": "카페",
+          "address": "서울 용산구 한강대로38길 35",
+          "distance": "517",
+          "place_url": "http://place.map.kakao.com/1665312488",
+          "reason": "파크15는 분위기 좋은 카페로, 편안한 좌석과 함께 스터디하기에 적합한 환경을 제공합니다. 서울 용산구 한강대로38길 35에 위치하고 있으며, 거리도 517m로 매우 가까워 모임에 적합합니다.",
+          "tags": [
+            "#넓은좌석",
+            "#조용한카페",
+            "#친구모임추천"
+          ],
+          "lat": 37.52871914463408,
+          "lng": 126.97024603060545
+        },
+        {
+          "place_name": "플러터커피로스터스",
+          "category": "커피전문점",
+          "address": "서울 용산구 한강대로46길 25",
+          "distance": "544",
+          "place_url": "http://place.map.kakao.com/2071786030",
+          "reason": "플러터커피로스터스는 커피 전문점으로, 고급 커피와 함께 조용한 학습 공간을 제공합니다. 주소는 서울 용산구 한강대로46길 25이며, 거리도 544m로 가까워 스터디 모임에 적합합니다.",
+          "tags": [
+            "#커피전문점",
+            "#신선한원두",
+            "#바리스타추천"
+          ],
+          "lat": 37.5309683675889,
+          "lng": 126.971557518904
+        },
+        {
+          "place_name": "에브리커피 신용산점",
+          "category": "카페",
+          "address": "서울 용산구 한강대로38길 25",
+          "distance": "564",
+          "place_url": "http://place.map.kakao.com/1541037066",
+          "reason": "에브리커피 신용산점은 넓은 공간과 편안한 분위기로, 3명이 모여 스터디하기에 좋은 선택입니다. 서울 용산구 한강대로44길 17에 위치하고, 거리도 580m로 접근이 용이합니다.",
+          "tags": [
+            "#편안한공간",
+            "#다양한메뉴",
+            "#혼자시간추천"
+          ],
+          "lat": 37.529178561648436,
+          "lng": 126.96987590106939
+        },
+        {
+          "place_name": "컴컴베이커리카페",
+          "category": "디저트카페",
+          "address": "서울 용산구 한강대로44길 14",
+          "distance": "597",
+          "place_url": "http://place.map.kakao.com/26817378",
+          "reason": "컴컴베이커리카페는 아늑한 분위기와 다양한 디저트를 제공하는 테마 카페로, 스터디에 적합한 조용한 환경을 갖추고 있습니다. 주소는 서울 용산구 한강대로44길 14이며, 거리도 597m로 가까워 편리합니다.",
+          "tags": [
+            "#베이커리카페",
+            "#달콤한디저트",
+            "#특별한음료"
+          ],
+          "lat": 37.53081856304149,
+          "lng": 126.97058460505436
+        }
+      ],
+      "scores": {
+        "precision_at_k": 0.8,
+        "faithfulness": 1.0,
+        "requirement_coverage": 0.75,
+        "average": 0.85
+      },
+      "rules": {
+        "result_count_ok": true,
+        "no_duplicate": true,
+        "all_have_address": true,
+        "all_have_url": true,
+        "all_have_reason": true,
+        "overall_pass": true
+      }
+    },
+    {
+      "id": "test_004",
+      "error": true,
+      "scores": {},
+      "rules": {}
+    },
+    {
+      "id": "test_005",
+      "input": {
+        "location": "이태원",
+        "purpose": "데이트",
+        "time_slot": "저녁 (17:00~21:00)",
+        "people_count": 2
+      },
+      "error": false,
+      "places": [
+        {
+          "place_name": "아즈니섬 한남",
+          "category": "카페",
+          "address": "서울 용산구 이태원로 190",
+          "distance": "72",
+          "place_url": "http://place.map.kakao.com/1662704436",
+          "reason": "아즈니섬 한남은 아늑한 분위기에서 편안한 대화를 나눌 수 있는 카페로, 저녁 시간에 데이트를 즐기기에 적합합니다. 이태원로 190에 위치해 있어 거리도 가까워 간편하게 방문할 수 있습니다.",
+          "tags": [
+            "#아늑한분위기",
+            "#커피전문",
+            "#야외좌석"
+          ],
+          "lat": 37.5343180068004,
+          "lng": 126.995044405723
+        },
+        {
+          "place_name": "올댓재즈",
+          "category": "라이브카페",
+          "address": "서울 용산구 이태원로 216",
+          "distance": "206",
+          "place_url": "http://place.map.kakao.com/1954080920",
+          "reason": "올댓재즈는 라이브 재즈 음악을 들으며 특별한 저녁 시간을 보낼 수 있는 테마카페입니다. 서울 용산구 이태원로 216에 위치해 있어, 음악과 함께 로맨틱한 분위기를 즐기기에 매우 적합한 장소입니다.",
+          "tags": [
+            "#라이브음악",
+            "#재즈카페",
+            "#편안한좌석"
+          ],
+          "lat": 37.53468750637461,
+          "lng": 126.99813315732841
+        },
+        {
+          "place_name": "위티스위티",
+          "category": "디저트카페",
+          "address": "서울 용산구 이태원로26길 16",
+          "distance": "242",
+          "place_url": "http://place.map.kakao.com/276596405",
+          "reason": "위티스위티는 독특한 디저트와 아기자기한 인테리어가 매력적인 디저트카페로, 달달한 디저트를 나누며 즐거운 시간을 보낼 수 있습니다. 서울 용산구 이태원로26길 16에 위치해 있어 데이트 후 방문하기 좋은 장소입니다.",
+          "tags": [
+            "#디저트전문",
+            "#인스타그램명소",
+            "#달콤한간식"
+          ],
+          "lat": 37.5336962295625,
+          "lng": 126.993290769387
+        },
+        {
+          "place_name": "세르클 한남",
+          "category": "카페",
+          "address": "서울 용산구 이태원로 223-5",
+          "distance": "253",
+          "place_url": "http://place.map.kakao.com/2056146617",
+          "reason": "세르클 한남은 모던하고 세련된 인테리어로 편안한 분위기를 자아내는 카페입니다. 서울 용산구 이태원로 223-5에 위치해 있어 데이트 후 여유로운 시간을 보내기에 적합합니다.",
+          "tags": [
+            "#모던한인테리어",
+            "#조용한공간",
+            "#작업하기좋은"
+          ],
+          "lat": 37.53557319383366,
+          "lng": 126.99838544484975
+        },
+        {
+          "place_name": "안티스트레스",
+          "category": "카페",
+          "address": "서울 용산구 이태원로20가길 9-7",
+          "distance": "272",
+          "place_url": "http://place.map.kakao.com/625597171",
+          "reason": "안티스트레스는 이름처럼 스트레스를 잊고 편안하게 시간을 보낼 수 있는 카페입니다. 서울 용산구 이태원로20가길 9-7에 위치해 있어, 저녁 시간에 조용한 대화를 나누기 좋은 장소입니다.",
+          "tags": [
+            "#힐링카페",
+            "#편안한좌석",
+            "#스트레스해소"
+          ],
+          "lat": 37.53380072142227,
+          "lng": 126.99287666528325
+        }
+      ],
+      "scores": {
+        "precision_at_k": 1.0,
+        "faithfulness": 1.0,
+        "requirement_coverage": 1.0,
+        "average": 1.0
+      },
+      "rules": {
+        "result_count_ok": true,
+        "no_duplicate": true,
+        "all_have_address": true,
+        "all_have_url": true,
+        "all_have_reason": true,
+        "overall_pass": true
+      }
+    }
+  ]
+}

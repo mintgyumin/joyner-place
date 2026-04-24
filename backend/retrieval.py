@@ -24,7 +24,8 @@ import requests
 from openai import OpenAI
 from dotenv import load_dotenv
 
-from indexing import build_place_documents, build_faiss_index
+from rank_bm25 import BM25Okapi
+from indexing import build_place_documents, build_faiss_index, build_bm25_index
 from schemas import PlaceSearchRequest, PlaceResult, RecommendResponse
 
 load_dotenv()
@@ -165,19 +166,27 @@ def _get_address_from_coords(lat: float, lng: float) -> str:
 
 
 def _search_places(query: str, x: float, y: float, radius: int = 1000) -> list[dict]:
-    """카카오 키워드 검색으로 주변 장소를 가져온다."""
+    """카카오 키워드 검색으로 주변 장소를 가져온다. (최대 3페이지 × 15개 = 45개)"""
     url = "https://dapi.kakao.com/v2/local/search/keyword.json"
-    params = {
-        "query":  query,
-        "x":      x,
-        "y":      y,
-        "radius": radius,
-        "size":   15,
-        "sort":   "distance",
-    }
-    response = requests.get(url, headers=KAKAO_HEADERS, params=params)
-    response.raise_for_status()
-    return response.json().get("documents", [])
+    results = []
+    for page in range(1, 4):  # 1, 2, 3페이지
+        params = {
+            "query":  query,
+            "x":      x,
+            "y":      y,
+            "radius": radius,
+            "size":   15,
+            "sort":   "distance",
+            "page":   page,
+        }
+        response = requests.get(url, headers=KAKAO_HEADERS, params=params)
+        response.raise_for_status()
+        data = response.json()
+        docs = data.get("documents", [])
+        results.extend(docs)
+        if data.get("meta", {}).get("is_end", True):
+            break
+    return results
 
 
 # ─────────────────────────────────────────
@@ -208,6 +217,157 @@ def _search_similar_places(
     return [documents[i] for i in indices[0]]
 
 
+def _bm25_search(
+    query: str,
+    bm25: BM25Okapi,
+    documents: list[str],
+    top_k: int = 5,
+) -> list[tuple[str, float]]:
+    """BM25 키워드 검색으로 상위 문서와 점수를 반환한다."""
+    tokenized_query = query.split()
+    scores = bm25.get_scores(tokenized_query)
+    top_indices = np.argsort(scores)[::-1][:top_k]
+    return [(documents[i], float(scores[i])) for i in top_indices]
+
+
+def _hybrid_search(
+    query: str,
+    index,
+    bm25: BM25Okapi,
+    documents: list[str],
+    top_k: int = 5,
+    faiss_weight: float = 0.7,
+    bm25_weight: float = 0.3,
+) -> list[str]:
+    """
+    FAISS 벡터 검색과 BM25 키워드 검색 점수를 결합해 상위 문서를 반환한다.
+
+    두 점수를 0~1로 정규화한 뒤 가중합(faiss 0.7 + bm25 0.3)으로 최종 순위를 결정한다.
+    FAISS는 거리 기반(낮을수록 유사)이므로 역수로 변환해 점수화한다.
+    """
+    # FAISS 검색 — 전체 문서 대상으로 거리 계산
+    response = client.embeddings.create(model=EMBEDDING_MODEL, input=[query])
+    query_vector = np.array([response.data[0].embedding], dtype=np.float32)
+    distances, indices = index.search(query_vector, len(documents))
+
+    # FAISS 점수: 거리 → 유사도 (1 / (1 + d)), 0~1 정규화
+    faiss_scores = np.zeros(len(documents))
+    for rank, (idx, dist) in enumerate(zip(indices[0], distances[0])):
+        faiss_scores[idx] = 1.0 / (1.0 + dist)
+    faiss_max = faiss_scores.max()
+    if faiss_max > 0:
+        faiss_scores /= faiss_max
+
+    # BM25 점수 0~1 정규화
+    bm25_raw = bm25.get_scores(query.split())
+    bm25_scores = np.array(bm25_raw, dtype=np.float32)
+    bm25_max = bm25_scores.max()
+    if bm25_max > 0:
+        bm25_scores /= bm25_max
+
+    # 가중합으로 최종 점수 계산
+    combined = faiss_weight * faiss_scores + bm25_weight * bm25_scores
+    top_indices = np.argsort(combined)[::-1][:top_k]
+    return [documents[i] for i in top_indices]
+
+
+def _rerank_results(
+    user_input: dict,
+    candidates: list[str],
+    top_k: int = 5,
+) -> list[str]:
+    """
+    GPT를 사용해 Hybrid Search 후보를 사용자 조건에 맞게 재정렬한다.
+
+    벡터+BM25 점수만으로는 잡기 어려운 맥락(분위기, 인원수, 시간대 적합성)을
+    GPT가 판단해 최종 순서를 결정한다.
+
+    Returns:
+        재정렬된 문서 텍스트 리스트 (상위 top_k개)
+    """
+    numbered = "\n".join(f"{i+1}. {doc}" for i, doc in enumerate(candidates))
+    prompt = (
+        f"사용자 조건: 위치={user_input['location']}, 목적={user_input['purpose']}, "
+        f"시간대={user_input['time']}, 인원={user_input['people']}명\n\n"
+        f"아래 장소들을 조건에 가장 잘 맞는 순서로 재정렬해서 번호만 쉼표로 나열하세요.\n"
+        f"예시: 3,1,5,2,4\n\n"
+        f"{numbered}\n\n"
+        f"번호만 쉼표로 나열:"
+    )
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.0,
+        max_tokens=20,
+    )
+    raw = response.choices[0].message.content.strip()
+    try:
+        order = [int(x.strip()) - 1 for x in raw.split(",") if x.strip().isdigit()]
+        # 유효 인덱스만 사용, 누락된 항목은 원래 순서로 보완
+        seen = set()
+        reranked = []
+        for idx in order:
+            if 0 <= idx < len(candidates) and idx not in seen:
+                reranked.append(candidates[idx])
+                seen.add(idx)
+        for idx, doc in enumerate(candidates):
+            if idx not in seen:
+                reranked.append(doc)
+        return reranked[:top_k]
+    except Exception:
+        return candidates[:top_k]
+
+
+def _generate_tags(places_info: list[dict]) -> list[list[str]]:
+    """
+    여러 장소의 특징 태그를 GPT로 한 번에 생성한다.
+
+    개별 호출 대신 배치로 처리해 API 비용을 줄인다.
+
+    Args:
+        places_info: [{"name": ..., "category": ..., "address": ...}, ...]
+
+    Returns:
+        각 장소에 대한 태그 리스트의 리스트
+        예: [["#조용한분위기", "#주차가능"], ["#넓은좌석", "#늦은시간운영"], ...]
+    """
+    numbered = "\n".join(
+        f"{i+1}. {info.get('name', '')} | {info.get('category', '')} | {info.get('address', '')}"
+        for i, info in enumerate(places_info)
+    )
+    prompt = (
+        f"아래 장소 목록에서 각 장소의 특징 태그 3~5개를 생성해주세요.\n"
+        f"태그 형식: #해시태그 (예: #조용한분위기 #넓은좌석 #주차가능 #늦은시간운영)\n"
+        f"각 장소를 번호와 함께 태그만 한 줄로 나열하세요. 설명 없이 태그만 작성하세요.\n\n"
+        f"{numbered}\n\n"
+        f"출력 형식:\n"
+        f"1. #태그1 #태그2 #태그3\n"
+        f"2. #태그1 #태그2 #태그3\n"
+        f"..."
+    )
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.3,
+        max_tokens=300,
+    )
+    raw = response.choices[0].message.content.strip()
+
+    result: list[list[str]] = []
+    for line in raw.split("\n"):
+        line = line.strip()
+        if not line:
+            continue
+        line = re.sub(r"^\d+\.\s*", "", line)
+        tags = [t.strip() for t in line.split() if t.startswith("#")]
+        result.append(tags[:5])
+
+    # 파싱 실패 시 빈 리스트로 패딩
+    while len(result) < len(places_info):
+        result.append([])
+    return result[:len(places_info)]
+
+
 def _recommend_places(user_input: dict, places: list[str]) -> str:
     """
     RAG로 추출된 장소 5개에 대해 GPT가 추천 이유를 자연어로 생성한다.
@@ -221,8 +381,11 @@ def _recommend_places(user_input: dict, places: list[str]) -> str:
     """
     places_text = "\n".join(f"{i+1}. {place}" for i, place in enumerate(places))
 
+    n = len(places)
     prompt = f"""당신은 친절한 장소 추천 AI입니다.
-아래 사용자 조건과 후보 장소를 참고해서 장소 5곳을 추천하고, 각각의 추천 이유를 설명해주세요.
+반드시 아래 후보 장소 목록에서만 선택하여 최대 {n}곳을 추천하고, 각각의 추천 이유를 설명해주세요.
+후보에 없는 장소를 만들거나 (대체장소없음) 같은 임의 항목을 추가하지 마세요.
+후보가 {n}개뿐이라면 {n}개만 추천하면 됩니다.
 
 [사용자 조건]
 - 위치: {user_input['location']}
@@ -310,10 +473,12 @@ def run_recommendation_pipeline(req: PlaceSearchRequest) -> RecommendResponse:
     1. 좌표 결정 (단일 위치 or 중간지점 계산)
     2. 카카오 API 장소 검색
     3. 텍스트 문서 변환 (build_place_documents)
-    4. FAISS 인덱스 생성 (build_faiss_index)
-    5. 유사도 검색 상위 3개 추출 (_search_similar_places)
-    6. GPT 추천 이유 생성 (_recommend_places)
-    7. 결과 파싱 → PlaceResult 리스트 조립
+    4. Contextual Embedding — GPT로 각 문서에 컨텍스트 접두어 추가
+    5. FAISS 인덱스 + BM25 인덱스 생성
+    6. Hybrid Search (FAISS 0.7 + BM25 0.3)
+    7. GPT Reranking — 조건에 맞게 후보 재정렬
+    8. GPT 추천 이유 생성 (_recommend_places)
+    9. 결과 파싱 → PlaceResult 리스트 조립
 
     Args:
         req: PlaceSearchRequest (location, purpose, time_slot, people_count, locations)
@@ -325,6 +490,9 @@ def run_recommendation_pipeline(req: PlaceSearchRequest) -> RecommendResponse:
         ValueError: 위치 좌표 변환 실패, 또는 주변 장소 없음
     """
     midpoint_address: str | None = None
+    midpoint_lat: float | None = None
+    midpoint_lng: float | None = None
+    participant_coords: list[dict] = []
 
     # ── STEP 1: 좌표 결정 ───────────────────────────────────────
     if req.locations and len(req.locations) >= 2:
@@ -333,11 +501,20 @@ def run_recommendation_pipeline(req: PlaceSearchRequest) -> RecommendResponse:
         if len(filled) < 2:
             raise ValueError("참여자 위치를 2개 이상 입력해주세요.")
 
-        midpoint = _get_midpoint_from_locs(filled)
-        if midpoint is None:
+        # 각 참여자 좌표 수집 (지도 핀 표시용)
+        coords_list = []
+        for loc in filled:
+            coords = _get_coords(loc)
+            if coords:
+                coords_list.append(coords)
+                participant_coords.append({"lat": coords[0], "lng": coords[1], "label": loc})
+
+        if len(coords_list) < 2:
             raise ValueError("유효한 위치가 2개 이상 필요해요. 입력한 위치명을 확인해주세요.")
 
+        midpoint = _calculate_midpoint(coords_list)
         lat, lng = midpoint
+        midpoint_lat, midpoint_lng = lat, lng
         midpoint_address = _get_address_from_coords(lat, lng)
         display_location = midpoint_address
 
@@ -351,6 +528,8 @@ def run_recommendation_pipeline(req: PlaceSearchRequest) -> RecommendResponse:
             raise ValueError(f"'{req.location}' 위치를 찾을 수 없어요. 다른 지역명으로 시도해보세요.")
 
         lat, lng = coords
+        # 단일 모드에서는 입력 위치를 참여자 좌표로 저장
+        participant_coords = [{"lat": lat, "lng": lng, "label": req.location}]
         display_location = req.location
 
     # ── STEP 2: 카카오 장소 검색 ────────────────────────────────
@@ -366,28 +545,47 @@ def run_recommendation_pipeline(req: PlaceSearchRequest) -> RecommendResponse:
     # ── STEP 3: 텍스트 문서 변환 ────────────────────────────────
     documents = build_place_documents(places)
 
-    # ── STEP 4: FAISS 인덱스 생성 ───────────────────────────────
-    index, embeddings, docs = build_faiss_index(documents)
-
-    # ── STEP 5: 유사도 검색 ─────────────────────────────────────
-    query = f"{req.people_count}인 {req.purpose} {req.time_slot} 분위기"
-    top_docs = _search_similar_places(query=query, index=index, documents=docs, top_k=5)
-    top_place_dicts = [_find_place_dict_by_doc(doc, places) for doc in top_docs]
-
-    # ── STEP 6: GPT 추천 이유 생성 ──────────────────────────────
     user_input = {
         "location": display_location,
         "purpose":  req.purpose,
         "time":     req.time_slot,
         "people":   req.people_count,
     }
+
+    # ── STEP 4: FAISS + BM25 인덱스 생성 ────────────────────────
+    index, _, docs = build_faiss_index(documents)
+    bm25 = build_bm25_index(documents)
+
+    # ── STEP 5: Hybrid Search ────────────────────────────────────
+    query = f"{req.people_count}인 {req.purpose} {req.time_slot} 분위기"
+    hybrid_docs = _hybrid_search(
+        query=query,
+        index=index,
+        bm25=bm25,
+        documents=docs,
+        top_k=7,
+    )
+
+    # ── STEP 7: GPT Reranking ────────────────────────────────────
+    print("[Reranking] GPT로 후보 재정렬 중...")
+    top_docs = _rerank_results(user_input=user_input, candidates=hybrid_docs, top_k=5)
+    top_place_dicts = [_find_place_dict_by_doc(doc, places) for doc in top_docs]
+
+    # ── STEP 8: GPT 추천 이유 생성 ──────────────────────────────
     recommendation_text = _recommend_places(user_input=user_input, places=top_docs)
 
-    # ── STEP 7: 결과 파싱 → PlaceResult 조립 ───────────────────
+    # ── STEP 9: 결과 파싱 → PlaceResult 조립 (중복 제거 포함) ──
     parsed_cards = _parse_recommendation(recommendation_text)
 
     place_results: list[PlaceResult] = []
+    seen_names: set[str] = set()
+
     for i, card in enumerate(parsed_cards):
+        # place_name 기준 중복 제거 — 같은 장소가 두 번 나오면 첫 번째만 사용
+        if card["name"] in seen_names:
+            continue
+        seen_names.add(card["name"])
+
         # GPT가 출력한 장소명으로 원본 카카오 데이터 찾기
         place_dict = (
             top_place_dicts[i]
@@ -395,11 +593,16 @@ def run_recommendation_pipeline(req: PlaceSearchRequest) -> RecommendResponse:
             else _find_place_dict_by_name(card["name"], places)
         )
 
+        # 카카오 데이터가 없으면 GPT가 만들어낸 가짜 장소 — 건너뜀
+        if not place_dict:
+            continue
+
         address = (
             place_dict.get("road_address_name")
             or place_dict.get("address_name")
             or ""
         )
+        # 카카오 API는 경도를 "x", 위도를 "y"로 반환 (반직관적이므로 주의)
         place_results.append(PlaceResult(
             place_name=card["name"],
             category=_category_leaf(place_dict.get("category_name", "")),
@@ -407,6 +610,23 @@ def run_recommendation_pipeline(req: PlaceSearchRequest) -> RecommendResponse:
             distance=place_dict.get("distance", ""),
             place_url=place_dict.get("place_url", ""),
             reason=card["reason"],
+            lat=float(place_dict["y"]) if place_dict.get("y") else None,
+            lng=float(place_dict["x"]) if place_dict.get("x") else None,
         ))
 
-    return RecommendResponse(places=place_results, midpoint=midpoint_address)
+    # ── STEP 10: 태그 생성 (중복 제거 후 최종 결과 기준) ────────
+    print(f"[태그 생성] {len(place_results)}개 장소 태그 생성 중...")
+    tags_batch = _generate_tags([
+        {"name": pr.place_name, "category": pr.category, "address": pr.address}
+        for pr in place_results
+    ])
+    for pr, tags in zip(place_results, tags_batch):
+        pr.tags = tags
+
+    return RecommendResponse(
+        places=place_results,
+        midpoint=midpoint_address,
+        midpoint_lat=midpoint_lat,
+        midpoint_lng=midpoint_lng,
+        participant_coords=participant_coords,
+    )

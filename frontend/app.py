@@ -8,10 +8,12 @@ Streamlit UI - JOYNER Place (프론트엔드)
 - 백엔드 URL: BACKEND_URL 환경변수 (기본 http://localhost:8000)
 """
 
+import json
 import os
 # from datetime import date as date_type, timedelta  # 약속 기능 주석처리 시 불필요
 import requests as req_lib
 import streamlit as st
+import streamlit.components.v1 as components
 from urllib.parse import quote
 from dotenv import load_dotenv
 
@@ -20,6 +22,10 @@ load_dotenv()
 # 백엔드 FastAPI 서버 주소
 # docker-compose 환경에서는 서비스 이름으로 접근 (예: http://backend:8000)
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
+
+# 카카오맵 JavaScript SDK 키 (.env에 KAKAO_JS_KEY=... 로 설정)
+# REST API 키와 다름! 카카오 개발자 콘솔에서 "JavaScript 키" 사용
+KAKAO_JS_KEY = os.getenv("KAKAO_JS_KEY", "")
 
 # ─────────────────────────────────────────
 # 페이지 기본 설정
@@ -250,6 +256,23 @@ st.markdown("""
         border-top: 1px solid #EEEEFF;
         margin: 0.6rem 0;
     }
+    /* 장소 태그 */
+    .place-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin: 0.3rem 0 0.6rem 0;
+    }
+    .place-tag {
+        background: #F0EEFF;
+        color: #7C6FF7;
+        border-radius: 20px;
+        padding: 0.15rem 0.65rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
     [data-testid="stAlert"] { border-radius: 10px !important; }
 
     /* 로그인 폼 */
@@ -590,6 +613,113 @@ def status_badge(status: str) -> str:
         "확정":   '<span class="badge badge-purple">🎉 확정</span>',
     }
     return mapping.get(status, status)
+
+
+def _build_map_html(
+    place_lat: float,
+    place_lng: float,
+    place_name: str,
+    participant_coords: list[dict],
+    midpoint_lat: float | None,
+    midpoint_lng: float | None,
+) -> str:
+    """
+    카카오맵 JavaScript SDK를 사용하는 HTML 문자열을 생성한다.
+
+    지도에 표시되는 핀:
+    - 빨간 핀 📍 : 각 참여자 출발지 (단일 모드에서는 입력 위치 1개)
+    - 황금 핀 ⭐ : 중간지점 (다중 참여자 모드에서만 표시)
+    - 보라 핀 🏠 : 추천 장소
+
+    Args:
+        place_lat/lng       : 추천 장소 좌표
+        place_name          : 추천 장소명 (핀 라벨)
+        participant_coords  : [{"lat": ..., "lng": ..., "label": "장소명"}, ...]
+        midpoint_lat/lng    : 중간지점 좌표 (없으면 None)
+    """
+    # 지도 중심: 중간지점 > 참여자 평균 > 추천 장소 순으로 fallback
+    if midpoint_lat and midpoint_lng:
+        center_lat, center_lng = midpoint_lat, midpoint_lng
+    elif participant_coords:
+        center_lat = sum(p["lat"] for p in participant_coords) / len(participant_coords)
+        center_lng = sum(p["lng"] for p in participant_coords) / len(participant_coords)
+    else:
+        center_lat, center_lng = place_lat, place_lng
+
+    # 파이썬 dict → JSON (따옴표·특수문자 안전하게 직렬화)
+    participants_json = json.dumps(participant_coords, ensure_ascii=False)
+    place_name_json   = json.dumps(place_name, ensure_ascii=False)  # JS 문자열로 삽입
+    mid_lat_js = midpoint_lat if midpoint_lat else "null"
+    mid_lng_js = midpoint_lng if midpoint_lng else "null"
+
+    # f-string 안에서 중괄호 이스케이프: {{ }} → 리터럴 { }
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {{ margin: 0; padding: 0; }}
+    #map {{ width: 100%; height: 380px; border-radius: 12px; overflow: hidden; }}
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- 카카오맵 JavaScript SDK 로드 (REST API 키가 아닌 JavaScript 키 사용) -->
+  <script type="text/javascript"
+    src="//dapi.kakao.com/v2/maps/sdk.js?appkey={KAKAO_JS_KEY}">
+  </script>
+
+  <script>
+    // ── 지도 초기화 ──────────────────────────────────────
+    var map = new kakao.maps.Map(document.getElementById('map'), {{
+      center: new kakao.maps.LatLng({center_lat}, {center_lng}),
+      level: 5   // 숫자가 클수록 더 넓은 범위 표시 (1~14)
+    }});
+
+    // ── 참여자 출발지 핀 (빨간색) ────────────────────────
+    var participants = {participants_json};
+    participants.forEach(function(p) {{
+      new kakao.maps.CustomOverlay({{
+        map: map,
+        position: new kakao.maps.LatLng(p.lat, p.lng),
+        // CustomOverlay는 HTML을 그대로 핀으로 사용한다
+        content: '<div style="background:#E53E3E;color:#fff;padding:4px 10px;'
+               + 'border-radius:20px;font-size:12px;font-weight:700;'
+               + 'white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.3);'
+               + 'cursor:default;">📍 ' + p.label + '</div>',
+        yAnchor: 1.6   // 핀 꼭짓점이 좌표에 맞도록 아래쪽으로 오프셋
+      }});
+    }});
+
+    // ── 중간지점 핀 (황금색, 다중 참여자 모드에서만 표시) ──
+    var midLat = {mid_lat_js};
+    var midLng = {mid_lng_js};
+    if (midLat && midLng) {{
+      new kakao.maps.CustomOverlay({{
+        map: map,
+        position: new kakao.maps.LatLng(midLat, midLng),
+        content: '<div style="background:#D69E2E;color:#fff;padding:4px 10px;'
+               + 'border-radius:20px;font-size:12px;font-weight:700;'
+               + 'white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,0.3);'
+               + 'cursor:default;">⭐ 중간지점</div>',
+        yAnchor: 1.6
+      }});
+    }}
+
+    // ── 추천 장소 핀 (보라색, 가장 눈에 띄도록 크게) ──────
+    new kakao.maps.CustomOverlay({{
+      map: map,
+      position: new kakao.maps.LatLng({place_lat}, {place_lng}),
+      content: '<div style="background:#7C6FF7;color:#fff;padding:6px 14px;'
+             + 'border-radius:20px;font-size:13px;font-weight:700;'
+             + 'white-space:nowrap;box-shadow:0 3px 10px rgba(124,111,247,0.5);'
+             + 'cursor:default;">🏠 ' + {place_name_json} + '</div>',
+      yAnchor: 1.6
+    }});
+  </script>
+</body>
+</html>"""
 
 
 def render_apt_detail(detail: dict):
@@ -967,11 +1097,14 @@ if st.button("장소 추천받기 🔍", type="primary", use_container_width=Tru
             st.error(str(e))
             st.stop()
 
-    # 결과를 session_state에 저장 (버튼 재클릭 없이도 약속 만들기 등 인터랙션 유지)
+    # 결과를 session_state에 저장 (재실행 후에도 지도·즐겨찾기 인터랙션 유지)
     st.session_state["rec"] = {
-        "places":   rec["places"],       # list[PlaceResult dict]
-        "midpoint": rec.get("midpoint"), # 중간지점 주소 or None
-        "mode":     mode,
+        "places":             rec["places"],                    # list[PlaceResult dict]
+        "midpoint":           rec.get("midpoint"),              # 중간지점 주소 or None
+        "midpoint_lat":       rec.get("midpoint_lat"),          # 중간지점 위도
+        "midpoint_lng":       rec.get("midpoint_lng"),          # 중간지점 경도
+        "participant_coords": rec.get("participant_coords", []), # 출발지 좌표 목록
+        "mode":               mode,
     }
     for _k in ["apt_form_card", "apt_created"]:
         st.session_state.pop(_k, None)
@@ -1005,6 +1138,7 @@ if "rec" in st.session_state:
             distance   = place.get("distance", "")
             place_url  = place.get("place_url", "")
             reason     = place.get("reason", "")
+            tags       = place.get("tags", [])
 
             dist_label = "중간지점" if rec.get("midpoint") else address.split()[0] if address else "출발지"
             cat_html  = f'<span class="cat-badge">{category}</span>' if category else ""
@@ -1014,6 +1148,11 @@ if "rec" in st.session_state:
             if distance:
                 meta_parts.append(f"📍 {dist_label}에서 {distance}m")
             meta_html = '<span style="color:#C5C3E0">·</span>'.join(meta_parts) if meta_parts else ""
+            tags_html = (
+                '<div class="place-tags">'
+                + "".join(f'<span class="place-tag">{t}</span>' for t in tags)
+                + "</div>"
+            ) if tags else ""
 
             st.markdown(f"""
 <div class="result-card">
@@ -1022,6 +1161,7 @@ if "rec" in st.session_state:
         <div class="place-name">{place_name}</div>
         {cat_html}
     </div>
+    {tags_html}
     {f'<div class="card-meta">{meta_html}</div>' if meta_html else ""}
     <hr class="card-divider">
     <div class="place-reason">{reason}</div>
@@ -1032,8 +1172,7 @@ if "rec" in st.session_state:
             favorited = _is_favorite(place_name)
             fav_label = "♥ 저장됨" if favorited else "♡ 즐겨찾기"
 
-            btn_col1, btn_col2 = st.columns(2)
-            # btn_col1, btn_col2, btn_col3 = st.columns(3)  # 약속 만들기 버튼 제거로 2열로 변경
+            btn_col1, btn_col2, btn_col3 = st.columns(3)
             with btn_col1:
                 if st.button(fav_label, key=f"fav_btn_{i}", use_container_width=True):
                     try:
@@ -1053,6 +1192,34 @@ if "rec" in st.session_state:
             with btn_col2:
                 if place_url:
                     st.link_button("🗺️ 카카오맵", url=place_url, use_container_width=True)
+            with btn_col3:
+                # 지도 보기 토글 버튼 — 같은 카드 클릭 시 닫기, 다른 카드면 열기
+                map_key = f"show_map_{i}"
+                map_open = st.session_state.get(map_key, False)
+                map_label = "▲ 지도 닫기" if map_open else "🗺️ 지도 보기"
+                if st.button(map_label, key=f"map_btn_{i}", use_container_width=True):
+                    st.session_state[map_key] = not map_open
+                    st.rerun()
+
+            # ── 지도 표시 (토글 ON일 때만 렌더링) ──────────────
+            place_lat = place.get("lat")
+            place_lng = place.get("lng")
+            if st.session_state.get(f"show_map_{i}") and place_lat and place_lng:
+                if not KAKAO_JS_KEY:
+                    st.warning("KAKAO_JS_KEY가 설정되지 않았어요. .env에 추가해주세요.")
+                else:
+                    map_html = _build_map_html(
+                        place_lat=place_lat,
+                        place_lng=place_lng,
+                        place_name=place_name,
+                        participant_coords=rec.get("participant_coords", []),
+                        midpoint_lat=rec.get("midpoint_lat"),
+                        midpoint_lng=rec.get("midpoint_lng"),
+                    )
+                    # scrolling=False: 지도 내부 스크롤만 작동, 페이지 스크롤 방해 안 함
+                    components.html(map_html, height=390, scrolling=False)
+            elif st.session_state.get(f"show_map_{i}") and not (place_lat and place_lng):
+                st.info("이 장소의 좌표 정보가 없어 지도를 표시할 수 없어요.")
             # with btn_col3:  # 약속 만들기 버튼 주석처리
             #     if st.button("📅 약속 만들기", key=f"apt_btn_{i}", use_container_width=True):
             #         st.session_state["apt_form_card"] = i

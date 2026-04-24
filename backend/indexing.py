@@ -1,10 +1,11 @@
 """
 RAG 인덱싱 모듈
-- build_place_documents() : 카카오 장소 데이터 → 텍스트 변환
-- build_faiss_index()     : 텍스트 → 임베딩 → FAISS 인덱스 생성
+- build_place_documents(): 카카오 장소 데이터 → 텍스트 변환
+- build_faiss_index()    : 텍스트 → 임베딩 → FAISS 인덱스 생성
+- build_bm25_index()     : 텍스트 → BM25 키워드 인덱스 생성
 
 이 모듈은 "데이터 준비" 단계를 담당한다.
-실제 검색은 retrieval.py의 _search_similar_places()가 수행한다.
+실제 검색은 retrieval.py가 수행한다.
 """
 
 import os
@@ -12,6 +13,7 @@ import numpy as np
 import faiss
 from openai import OpenAI
 from dotenv import load_dotenv
+from rank_bm25 import BM25Okapi
 
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -50,6 +52,24 @@ def build_place_documents(places: list[dict]) -> list[str]:
         documents.append(text)
 
     return documents
+
+
+def build_bm25_index(documents: list[str]) -> BM25Okapi:
+    """
+    텍스트 리스트로 BM25 키워드 검색 인덱스를 생성한다.
+
+    BM25는 단어 빈도(TF)와 역문서 빈도(IDF)를 결합한 고전적 키워드 검색 알고리즘이다.
+    FAISS 벡터 검색이 의미(semantic)를 잡는다면, BM25는 정확한 키워드 매칭을 보완한다.
+    두 점수를 결합하면 키워드+의미 모두 커버하는 Hybrid Search가 된다.
+
+    Args:
+        documents: build_place_documents()가 반환한 텍스트 리스트
+
+    Returns:
+        BM25Okapi 인덱스 객체
+    """
+    tokenized = [doc.split() for doc in documents]
+    return BM25Okapi(tokenized)
 
 
 def build_faiss_index(documents: list[str]) -> tuple:
