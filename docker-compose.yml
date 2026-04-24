@@ -119,3 +119,44 @@ services:
 
     restart: unless-stopped
 
+  # ── Multi-Agent 백엔드 서비스 ────────────────────────────────────
+  multi-agent-backend:
+    build: ./multi_agent/backend
+
+    ports:
+      - "8003:8003"
+
+    env_file:
+      - .env
+
+    environment:
+      - MULTI_AGENT_JWT_SECRET_KEY=joyner-multi-agent-secret-change-in-production
+      - DATA_DIR=/app/data
+
+    volumes:
+      - ./multi_agent/data:/app/data
+
+    networks:
+      - joyner-net
+
+    restart: unless-stopped
+
+  # ── Multi-Agent 프론트엔드 서비스 ───────────────────────────────
+  multi-agent-frontend:
+    build: ./multi_agent/frontend
+
+    ports:
+      - "8503:8503"
+
+    environment:
+      - MULTI_AGENT_BACKEND_URL=http://multi-agent-backend:8003
+      - KAKAO_JS_KEY=${KAKAO_JS_KEY}
+
+    depends_on:
+      - multi-agent-backend
+
+    networks:
+      - joyner-net
+
+    restart: unless-stopped
+

@@ -1,7 +1,8 @@
 """
-JOYNER Place Agent — Streamlit 채팅 프론트엔드
+JOYNER Place Multi-Agent — Streamlit 채팅 프론트엔드
 """
 
+import json
 import os
 import uuid
 import requests
@@ -11,23 +12,22 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-BACKEND_URL = os.getenv("AGENT_BACKEND_URL", "http://localhost:8001")
+BACKEND_URL = os.getenv("MULTI_AGENT_BACKEND_URL", "http://localhost:8003")
 KAKAO_JS_KEY = os.getenv("KAKAO_JS_KEY", "")
 
 st.set_page_config(
-    page_title="JOYNER Place Agent",
-    page_icon="🤖",
+    page_title="JOYNER Place Multi-Agent",
+    page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
 # ─────────────────────────────────────────
-# CSS — JOYNER 색감 통일
+# CSS
 # ─────────────────────────────────────────
 
 st.markdown("""
 <style>
-/* ── 전역 ── */
 html, body, [data-testid="stAppViewContainer"] {
     background: #F7F6FF !important;
     color: #1A1A2E !important;
@@ -39,7 +39,6 @@ html, body, [data-testid="stAppViewContainer"] {
 }
 [data-testid="stSidebar"] * { color: #1A1A2E !important; }
 
-/* ── 헤더 ── */
 .joyner-header {
     display: flex;
     align-items: center;
@@ -60,7 +59,6 @@ html, body, [data-testid="stAppViewContainer"] {
 }
 .jd { border: none; border-top: 1.5px solid #E8E6FF; margin: 1rem 0; }
 
-/* ── 버튼 — 모든 버튼 보라색 통일 ── */
 button[kind="primary"],
 button[kind="secondary"],
 div[data-testid="stButton"] > button,
@@ -85,7 +83,6 @@ div.stFormSubmitButton > button:hover {
     border-color: #6358E8 !important;
 }
 
-/* ── 입력창 ── */
 [data-testid="stChatInput"] textarea,
 [data-testid="stTextInput"] input,
 [data-testid="stTextArea"] textarea {
@@ -100,7 +97,6 @@ div.stFormSubmitButton > button:hover {
     box-shadow: 0 0 0 2px rgba(124,111,247,0.15) !important;
 }
 
-/* ── 채팅 말풍선 ── */
 [data-testid="stChatMessage"] {
     background: #FFFFFF !important;
     border: 1.5px solid #E8E6FF !important;
@@ -109,7 +105,6 @@ div.stFormSubmitButton > button:hover {
     margin-bottom: 8px !important;
 }
 
-/* ── 장소 카드 ── */
 .place-card {
     background: #FFFFFF;
     border: 1.5px solid #E8E6FF;
@@ -138,16 +133,8 @@ div.stFormSubmitButton > button:hover {
     font-weight: 700;
     color: #1A1A2E;
 }
-.place-card .category {
-    color: #6B6B8D;
-    font-size: 0.82rem;
-    margin: 6px 0;
-}
-.place-card .reason {
-    color: #495057;
-    font-size: 0.88rem;
-    line-height: 1.6;
-}
+.place-card .category { color: #6B6B8D; font-size: 0.82rem; margin: 6px 0; }
+.place-card .reason { color: #495057; font-size: 0.88rem; line-height: 1.6; }
 .tag {
     display: inline-block;
     background: #F0EEFF;
@@ -159,9 +146,10 @@ div.stFormSubmitButton > button:hover {
     margin: 3px 2px 0 0;
     font-weight: 500;
 }
+.place-card .dist { color: #7C6FF7; font-weight: 600; }
 
-/* ── 도구 로그 ── */
-.tool-log-item {
+/* ── 에이전트 로그 ── */
+.agent-log-item {
     background: #F7F6FF;
     border-left: 3px solid #7C6FF7;
     border-radius: 6px;
@@ -170,10 +158,36 @@ div.stFormSubmitButton > button:hover {
     font-size: 0.82rem;
     color: #1A1A2E;
 }
-.tool-log-item .tl-label { font-weight: 600; color: #7C6FF7; }
-.tool-log-item .tl-summary { color: #6B6B8D; margin-top: 2px; }
+.agent-log-item.failed { border-left-color: #E53935; background: #FFF5F5; }
+.agent-log-item .al-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+}
+.al-name { font-weight: 700; color: #7C6FF7; }
+.al-name.failed { color: #E53935; }
+.al-duration { color: #9999BB; font-size: 0.75rem; margin-left: auto; }
+.al-summary { color: #6B6B8D; margin-top: 2px; }
 
-/* ── 뱃지 ── */
+.badge-done {
+    display: inline-block;
+    background: #E6FAF0;
+    color: #1A9C5B;
+    border-radius: 12px;
+    padding: 1px 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+.badge-failed {
+    display: inline-block;
+    background: #FFECEC;
+    color: #E53935;
+    border-radius: 12px;
+    padding: 1px 8px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
 .badge-pass {
     display: inline-block;
     background: #E6FAF0;
@@ -193,7 +207,6 @@ div.stFormSubmitButton > button:hover {
     font-weight: 600;
 }
 
-/* ── 사이드바 구분선 ── */
 .sidebar-section {
     font-size: 0.78rem;
     font-weight: 700;
@@ -203,14 +216,12 @@ div.stFormSubmitButton > button:hover {
     margin: 16px 0 6px 0;
 }
 
-/* ── expander ── */
 [data-testid="stExpander"] {
     border: 1.5px solid #E8E6FF !important;
     border-radius: 10px !important;
     background: #FFFFFF !important;
 }
 
-/* ── 카카오맵 링크 버튼 ── */
 .kakao-btn {
     display: inline-flex;
     align-items: center;
@@ -226,13 +237,8 @@ div.stFormSubmitButton > button:hover {
     border: none;
     width: 100%;
     transition: background 0.15s, transform 0.1s;
-    letter-spacing: -0.01em;
 }
-.kakao-btn:hover {
-    background: #6358E8;
-    transform: translateY(-1px);
-    color: #FFFFFF !important;
-}
+.kakao-btn:hover { background: #6358E8; transform: translateY(-1px); color: #FFFFFF !important; }
 .kakao-btn-outline {
     display: inline-flex;
     align-items: center;
@@ -248,19 +254,9 @@ div.stFormSubmitButton > button:hover {
     border: 1.5px solid #7C6FF7;
     width: 100%;
     transition: background 0.15s, transform 0.1s;
-    letter-spacing: -0.01em;
 }
-.kakao-btn-outline:hover {
-    background: #F0EEFF;
-    transform: translateY(-1px);
-    color: #6358E8 !important;
-}
-.place-card .dist {
-    color: #7C6FF7;
-    font-weight: 600;
-}
+.kakao-btn-outline:hover { background: #F0EEFF; transform: translateY(-1px); color: #6358E8 !important; }
 
-/* ── 카카오 지도 iframe 여백 제거 ── */
 iframe {
     display: block;
     margin: 0 !important;
@@ -270,6 +266,38 @@ iframe {
     margin-bottom: 0 !important;
     padding-bottom: 0 !important;
 }
+
+/* ── 파이프라인 진행 표시 ── */
+.pipeline-bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 8px 0 12px 0;
+    flex-wrap: wrap;
+}
+.pipeline-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #F0EEFF;
+    border: 1px solid #D4CFFF;
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #7C6FF7;
+}
+.pipeline-step.done {
+    background: #E6FAF0;
+    border-color: #B2DFCE;
+    color: #1A9C5B;
+}
+.pipeline-step.failed {
+    background: #FFECEC;
+    border-color: #FFCDD2;
+    color: #E53935;
+}
+.pipeline-arrow { color: #CCCCDD; font-size: 0.8rem; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -288,16 +316,13 @@ def _init_state():
         "conversations": [],
         "favorites": [],
         "page": "login",
-        # 백엔드에 전달할 대화 히스토리
-        # {"role": "user"|"assistant", "content": "..."} 형태의 딕셔너리 목록
-        # 새 대화 시작 시 초기화, 매 턴마다 user/assistant 메시지를 누적
         "conversation_history": [],
+        "data_loaded": False,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
             st.session_state[k] = v
 
-    # 토큰이 있으면 채팅 페이지로 유지 (새로고침 후에도 로그인 상태 유지)
     if st.session_state.token and st.session_state.page == "login":
         st.session_state.page = "chat"
 
@@ -332,51 +357,120 @@ def api_register(username: str, name: str, email: str, password: str) -> tuple[b
         return False, str(e)
 
 
-def api_chat(message: str, session_id: str | None, conversation_history: list[dict] | None = None) -> dict | None:
-    """백엔드 /chat 엔드포인트 호출.
+def api_load_favorites() -> list:
+    try:
+        r = requests.get(f"{BACKEND_URL}/user/favorites", headers=_headers(), timeout=5)
+        return r.json() if r.status_code == 200 else []
+    except Exception:
+        return []
 
-    conversation_history를 함께 전달해 이전 대화(위치·인원·목적)를 GPT가 기억하게 한다.
-    """
+
+def api_save_favorites(favorites: list) -> None:
+    try:
+        requests.post(f"{BACKEND_URL}/user/favorites", json=favorites, headers=_headers(), timeout=5)
+    except Exception:
+        pass
+
+
+def api_load_conversations() -> list:
+    try:
+        r = requests.get(f"{BACKEND_URL}/user/conversations", headers=_headers(), timeout=5)
+        return r.json() if r.status_code == 200 else []
+    except Exception:
+        return []
+
+
+def api_save_conversations(conversations: list) -> None:
+    try:
+        requests.post(f"{BACKEND_URL}/user/conversations", json=conversations, headers=_headers(), timeout=5)
+    except Exception:
+        pass
+
+
+def api_chat(message: str, session_id: str | None, conversation_history: list[dict] | None = None) -> dict | None:
     try:
         r = requests.post(
             f"{BACKEND_URL}/chat",
             json={
                 "message": message,
                 "session_id": session_id,
-                # 이전 대화 전체를 백엔드로 전달 (없으면 빈 리스트)
                 "conversation_history": conversation_history or [],
             },
             headers=_headers(),
-            timeout=120,
+            timeout=180,
         )
         return r.json() if r.status_code == 200 else None
     except Exception:
         return None
 
 
+if st.session_state.token and not st.session_state.data_loaded:
+    loaded_favs = api_load_favorites()
+    loaded_convs = api_load_conversations()
+    if loaded_favs:
+        st.session_state.favorites = loaded_favs
+    if loaded_convs:
+        st.session_state.conversations = loaded_convs
+    st.session_state.data_loaded = True
+
+
 # ─────────────────────────────────────────
 # UI 컴포넌트
 # ─────────────────────────────────────────
 
-TOOL_META = {
-    "calculate_midpoint_tool": ("📍", "중간지점 계산"),
-    "search_places_tool":      ("🔍", "장소 검색"),
-    "get_place_recommendation_tool": ("🤖", "추천 이유 생성"),
-    "validate_result_tool":    ("✅", "결과 검증"),
+_AGENT_ICONS = {
+    "Location Agent": "📍",
+    "Search Agent":   "🔍",
+    "Recommend Agent": "🤖",
+    "Validation Agent": "✅",
 }
 
 
-def render_tool_log(log: list[dict]):
+def render_agent_log(log: list[dict], retry_count: int = 0):
+    """에이전트 실행 로그를 파이프라인 형태로 렌더링한다."""
     if not log:
         return
-    with st.expander("🔧 Agent 실행 과정", expanded=False):
-        for i, entry in enumerate(log, 1):
-            icon, label = TOOL_META.get(entry.get("tool", ""), ("⚙️", entry.get("tool", "")))
-            summary = entry.get("result_summary", "")
+
+    # 파이프라인 진행 바 (첫 번째 시도 기준 4개 에이전트)
+    first_agents = [e for e in log if "(재시도" not in e.get("agent", "")]
+    if first_agents:
+        steps_html = ""
+        for i, entry in enumerate(first_agents):
+            agent_short = entry["agent"].split(" (")[0]
+            icon = _AGENT_ICONS.get(agent_short, "⚙️")
+            status_cls = "done" if entry["status"] == "done" else "failed"
+            steps_html += f'<span class="pipeline-step {status_cls}">{icon} {agent_short}</span>'
+            if i < len(first_agents) - 1:
+                steps_html += '<span class="pipeline-arrow">→</span>'
+        if retry_count > 0:
+            steps_html += f'<span class="pipeline-arrow">↩</span>'
+            steps_html += f'<span class="pipeline-step">재시도 {retry_count}회</span>'
+        st.markdown(f'<div class="pipeline-bar">{steps_html}</div>', unsafe_allow_html=True)
+
+    with st.expander("🧠 Multi-Agent 실행 과정", expanded=False):
+        for entry in log:
+            agent_name = entry.get("agent", "")
+            agent_short = agent_name.split(" (")[0]
+            icon = _AGENT_ICONS.get(agent_short, "⚙️")
+            status = entry.get("status", "done")
+            summary = entry.get("summary", "")
+            duration_ms = entry.get("duration_ms", 0)
+
+            status_badge = (
+                '<span class="badge-done">✓ 완료</span>' if status == "done"
+                else '<span class="badge-failed">✗ 실패</span>'
+            )
+            item_cls = "agent-log-item" + (" failed" if status != "done" else "")
+            name_cls = "al-name" + (" failed" if status != "done" else "")
+
             st.markdown(
-                f'<div class="tool-log-item">'
-                f'<div class="tl-label">{icon} {i}. {label}</div>'
-                f'<div class="tl-summary">{summary}</div>'
+                f'<div class="{item_cls}">'
+                f'  <div class="al-header">'
+                f'    <span class="{name_cls}">{icon} {agent_name}</span>'
+                f'    {status_badge}'
+                f'    <span class="al-duration">{duration_ms}ms</span>'
+                f'  </div>'
+                f'  <div class="al-summary">{summary}</div>'
                 f'</div>',
                 unsafe_allow_html=True,
             )
@@ -440,12 +534,6 @@ def _inline_map_html(lat: float, lng: float, name: str) -> str:
 
 
 def render_place_card(place: dict, idx: int, turn_key: str = ""):
-    """장소 카드 한 장을 렌더링한다.
-
-    turn_key: 대화 턴을 구분하는 고유 키.
-              여러 번 질문할 때 같은 장소·같은 순위 카드의 세션 상태가
-              서로 겹치지 않도록 반드시 전달해야 한다.
-    """
     tags_html = "".join(f'<span class="tag">{t}</span>' for t in place.get("tags", []))
     dist = place.get("distance", "")
     dist_text = f" &nbsp;·&nbsp; <span class='dist'>{dist}m</span>" if dist else ""
@@ -466,12 +554,9 @@ def render_place_card(place: dict, idx: int, turn_key: str = ""):
 
     is_fav = any(f["place_name"] == place["place_name"] for f in st.session_state.favorites)
     fav_label = "★ 저장됨" if is_fav else "♡ 즐겨찾기"
-
     place_url = place.get("place_url", "")
     lat, lng, pname = place.get("lat"), place.get("lng"), place.get("place_name", "")
 
-    # turn_key를 포함해야 대화 여러 번 시 같은 장소명·순위의 카드끼리
-    # 세션 상태가 충돌하지 않는다 (지도 열림/닫힘 상태가 분리됨)
     map_key = f"show_map_{turn_key}_{idx}_{pname}"
     if map_key not in st.session_state:
         st.session_state[map_key] = False
@@ -484,6 +569,7 @@ def render_place_card(place: dict, idx: int, turn_key: str = ""):
                 st.session_state.favorites = [f for f in st.session_state.favorites if f["place_name"] != pname]
             else:
                 st.session_state.favorites.append(place)
+            api_save_favorites(st.session_state.favorites)
             st.rerun()
     with col_kakao:
         if place_url:
@@ -502,13 +588,7 @@ def render_place_card(place: dict, idx: int, turn_key: str = ""):
         components.html(_inline_map_html(lat, lng, pname), height=355, scrolling=False)
 
 
-
 def render_recommendations(data: dict, turn_key: str = ""):
-    """추천 장소 목록을 렌더링한다.
-
-    turn_key: 대화 턴을 구분하는 고유 키.
-              render_place_card로 그대로 전달되어 지도 상태 충돌을 방지한다.
-    """
     recommendations = data.get("recommendations") or []
     if not recommendations:
         return
@@ -519,7 +599,7 @@ def render_recommendations(data: dict, turn_key: str = ""):
     validation = data.get("validation_result")
     if validation:
         badge = '<span class="badge-pass">✅ 검증 완료</span>' if validation.get("passed") else \
-                f'<span class="badge-warn">⚠️ {", ".join(validation.get("issues", []))}</span>'
+                f'<span class="badge-warn">⚠️ {", ".join(validation.get("issues", [])[:2])}</span>'
         st.markdown(badge, unsafe_allow_html=True)
         st.markdown("")
 
@@ -527,6 +607,27 @@ def render_recommendations(data: dict, turn_key: str = ""):
     for i, place in enumerate(place_dicts, 1):
         render_place_card(place, i, turn_key=turn_key)
 
+    # 다운로드 버튼
+    try:
+        dl_data = json.dumps(place_dicts, ensure_ascii=False, indent=2)
+        st.download_button(
+            label="⬇️ 추천 결과 저장 (JSON)",
+            data=dl_data,
+            file_name=f"joyner_recommendations_{turn_key}.json",
+            mime="application/json",
+            key=f"dl_{turn_key}",
+        )
+    except Exception:
+        pass
+
+
+def render_json_view(data: dict, turn_key: str = ""):
+    """전체 응답 JSON을 토글로 표시한다."""
+    with st.expander("🔎 전체 응답 JSON", expanded=False):
+        try:
+            st.json(data)
+        except Exception:
+            st.code(str(data))
 
 
 # ─────────────────────────────────────────
@@ -537,21 +638,39 @@ def render_sidebar():
     with st.sidebar:
         st.markdown(
             '<div class="joyner-header" style="margin-bottom:8px">'
-            '<span style="font-size:1.5rem">🤖</span>'
+            '<span style="font-size:1.5rem">🧠</span>'
             '<span style="font-size:1.2rem;font-weight:700;color:#1A1A2E">'
-            'JOYNER <span style="color:#7C6FF7">Agent</span></span>'
+            'JOYNER <span style="color:#7C6FF7">Multi-Agent</span></span>'
             '</div>',
             unsafe_allow_html=True,
         )
 
         if st.session_state.token:
-            st.markdown(f'<div style="color:#6B6B8D;font-size:0.85rem">안녕하세요, <b style="color:#7C6FF7">{st.session_state.name}</b>님!</div>', unsafe_allow_html=True)
+            st.markdown(
+                f'<div style="color:#6B6B8D;font-size:0.85rem">안녕하세요, '
+                f'<b style="color:#7C6FF7">{st.session_state.name}</b>님!</div>',
+                unsafe_allow_html=True,
+            )
             st.markdown("")
             if st.button("🚪 로그아웃", use_container_width=True):
                 for k in ["token", "username", "name", "session_id", "messages"]:
                     st.session_state[k] = None if k != "messages" else []
                 st.session_state.page = "login"
                 st.rerun()
+
+        st.markdown('<hr class="jd">', unsafe_allow_html=True)
+
+        # 파이프라인 설명
+        st.markdown('<div class="sidebar-section">파이프라인</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div style="font-size:0.78rem;color:#6B6B8D;line-height:1.8">'
+            '📍 Location Agent<br>'
+            '🔍 Search Agent<br>'
+            '🤖 Recommend Agent<br>'
+            '✅ Validation Agent'
+            '</div>',
+            unsafe_allow_html=True,
+        )
 
         st.markdown('<hr class="jd">', unsafe_allow_html=True)
 
@@ -563,7 +682,7 @@ def render_sidebar():
                     "title": title,
                     "messages": st.session_state.messages.copy(),
                 })
-            # 새 대화 시작 시 히스토리도 함께 초기화
+                api_save_conversations(st.session_state.conversations)
             st.session_state.messages = []
             st.session_state.session_id = None
             st.session_state.conversation_history = []
@@ -582,11 +701,17 @@ def render_sidebar():
             st.markdown('<div class="sidebar-section">⭐ 즐겨찾기</div>', unsafe_allow_html=True)
             for fav in st.session_state.favorites:
                 with st.expander(fav["place_name"]):
-                    st.markdown(f'<span style="color:#6B6B8D;font-size:0.82rem">📍 {fav.get("address","")}</span>', unsafe_allow_html=True)
+                    st.markdown(
+                        f'<span style="color:#6B6B8D;font-size:0.82rem">📍 {fav.get("address","")}</span>',
+                        unsafe_allow_html=True,
+                    )
                     if fav.get("place_url"):
                         st.markdown(f"[카카오맵]({fav['place_url']})")
                     if st.button("삭제", key=f"del_{fav['place_name']}"):
-                        st.session_state.favorites = [f for f in st.session_state.favorites if f["place_name"] != fav["place_name"]]
+                        st.session_state.favorites = [
+                            f for f in st.session_state.favorites if f["place_name"] != fav["place_name"]
+                        ]
+                        api_save_favorites(st.session_state.favorites)
                         st.rerun()
 
 
@@ -599,11 +724,11 @@ def render_login():
     with col:
         st.markdown(
             '<div class="joyner-header" style="justify-content:center;margin-bottom:4px">'
-            '<span style="font-size:2rem">🤖</span>'
+            '<span style="font-size:2rem">🧠</span>'
             '<h1 style="font-size:1.8rem;font-weight:700;color:#1A1A2E;margin:0">'
-            'JOYNER <span style="color:#7C6FF7">Agent</span></h1>'
+            'JOYNER <span style="color:#7C6FF7">Multi-Agent</span></h1>'
             '</div>'
-            '<p style="text-align:center;color:#6B6B8D;margin-bottom:2rem">AI 장소 추천 어시스턴트</p>',
+            '<p style="text-align:center;color:#6B6B8D;margin-bottom:2rem">4개 AI 에이전트가 협력하는 장소 추천</p>',
             unsafe_allow_html=True,
         )
         with st.form("login_form"):
@@ -633,7 +758,7 @@ def render_register():
     with col:
         st.markdown(
             '<h2 style="font-weight:700;color:#1A1A2E">회원가입</h2>'
-            '<p style="color:#6B6B8D;margin-bottom:1.5rem">JOYNER Agent에 오신 걸 환영해요!</p>',
+            '<p style="color:#6B6B8D;margin-bottom:1.5rem">JOYNER Multi-Agent에 오신 걸 환영해요!</p>',
             unsafe_allow_html=True,
         )
         with st.form("register_form"):
@@ -664,26 +789,25 @@ def render_register():
 def render_chat():
     st.markdown(
         '<div class="joyner-header">'
-        '<span style="font-size:1.8rem">🤖</span>'
+        '<span style="font-size:1.8rem">🧠</span>'
         '<h1 style="font-size:1.5rem;font-weight:700;color:#1A1A2E;margin:0">'
-        'JOYNER <span style="color:#7C6FF7">Place Agent</span></h1>'
+        'JOYNER <span style="color:#7C6FF7">Place Multi-Agent</span></h1>'
         '</div>'
-        '<p class="joyner-sub">모임 목적, 인원, 출발지를 알려주시면 바로 장소를 찾아드려요!</p>',
+        '<p class="joyner-sub">4개 AI 에이전트가 순서대로 협력해 최적의 장소를 찾아드려요!</p>',
         unsafe_allow_html=True,
     )
 
     for msg_i, msg in enumerate(st.session_state.messages):
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
-            if msg.get("data") and msg["data"].get("recommendations"):
-                render_tool_log(msg["data"].get("tool_calls_log", []))
-                # turn_key로 메시지 인덱스를 전달 → 대화가 여러 번일 때
-                # 같은 장소·순위의 카드가 세션 상태를 공유하지 않음
-                render_recommendations(msg["data"], turn_key=str(msg_i))
-            elif msg.get("data"):
-                render_tool_log(msg["data"].get("tool_calls_log", []))
+            if msg.get("data"):
+                data = msg["data"]
+                render_agent_log(data.get("agent_log", []), retry_count=data.get("retry_count", 0))
+                if data.get("recommendations"):
+                    render_recommendations(data, turn_key=str(msg_i))
+                    render_json_view(data, turn_key=str(msg_i))
 
-    user_input = st.chat_input("예: 길음에서 5명 저녁 회식 장소 추천해줘")
+    user_input = st.chat_input("예: 강남역 5명 저녁 회식 장소 추천해줘")
     if not user_input:
         return
 
@@ -692,39 +816,29 @@ def render_chat():
         st.markdown(user_input)
 
     with st.chat_message("assistant"):
-        with st.spinner("장소를 찾고 있어요..."):
+        with st.spinner("4개 에이전트가 최적 장소를 찾고 있어요..."):
             result = api_chat(
                 user_input,
                 st.session_state.session_id,
-                # 현재까지 쌓인 대화 히스토리를 백엔드로 전달
-                # 백엔드 GPT가 이전 위치·인원·목적 컨텍스트를 유지할 수 있다
                 st.session_state.conversation_history,
             )
 
         if result:
             st.session_state.session_id = result.get("session_id")
             reply = result.get("reply", "추천을 완료했습니다.")
-            # 추천 카드가 있으면 장소 목록을 텍스트로 중복 표시하지 않음
-            # 마지막 줄(마무리 인사)만 표시
+            st.markdown(reply)
+
+            retry_count = result.get("retry_count", 0)
+            render_agent_log(result.get("agent_log", []), retry_count=retry_count)
+
             if result.get("recommendations"):
-                lines = [l.strip() for l in reply.splitlines() if l.strip()]
-                # 번호 목록 줄 제거 후 마지막 문장만 표시
-                greeting_lines = [l for l in lines if not l[0].isdigit() and not l.startswith("-")]
-                display_reply = greeting_lines[-1] if greeting_lines else "위 장소들이 마음에 드셨으면 좋겠어요!"
-            else:
-                display_reply = reply
-            st.markdown(display_reply)
-            render_tool_log(result.get("tool_calls_log", []))
-            # 새 질문의 답변 turn_key = 저장 후 메시지 인덱스 (현재 마지막 인덱스)
-            # messages에 아직 append 전이므로 현재 길이가 곧 다음 인덱스가 됨
-            render_recommendations(result, turn_key=str(len(st.session_state.messages)))
+                turn_key = str(len(st.session_state.messages))
+                render_recommendations(result, turn_key=turn_key)
+                render_json_view(result, turn_key=turn_key)
 
-            # 이번 턴의 user/assistant 메시지를 히스토리에 누적
-            # 다음 요청 시 백엔드 GPT가 이 내용을 참고해 컨텍스트를 이어간다
             st.session_state.conversation_history.append({"role": "user", "content": user_input})
-            st.session_state.conversation_history.append({"role": "assistant", "content": display_reply})
-
-            st.session_state.messages.append({"role": "assistant", "content": display_reply, "data": result})
+            st.session_state.conversation_history.append({"role": "assistant", "content": reply})
+            st.session_state.messages.append({"role": "assistant", "content": reply, "data": result})
         else:
             msg = "서버 오류가 발생했어요. 잠시 후 다시 시도해주세요."
             st.error(msg)
