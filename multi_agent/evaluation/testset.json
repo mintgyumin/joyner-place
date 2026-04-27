@@ -1,0 +1,136 @@
+[
+  {
+    "id": "TC001",
+    "description": "강남역 5명 저녁 회식 — 음식점 기본 시나리오",
+    "input": {
+      "message": "강남역 5명 저녁 회식 장소 추천해줘",
+      "session_id": "eval_tc001"
+    },
+    "expected": {
+      "location_name": "강남역",
+      "purpose": "회식",
+      "time_slot": "저녁",
+      "people_count": 5,
+      "category": "",
+      "expected_places": [],
+      "forbidden_categories": ["분식", "카페", "편의점"],
+      "allowed_categories": ["음식점", "한식", "일식", "중식", "양식", "고기", "구이"],
+      "min_recommendations": 3
+    }
+  },
+  {
+    "id": "TC002",
+    "description": "강남역 5명 저녁 고깃집 — 카테고리 명시 시나리오",
+    "input": {
+      "message": "강남역 5명 저녁 고깃집 추천해줘",
+      "session_id": "eval_tc002"
+    },
+    "expected": {
+      "location_name": "강남역",
+      "purpose": "회식",
+      "time_slot": "저녁",
+      "people_count": 5,
+      "category": "고깃집",
+      "expected_places": [],
+      "forbidden_categories": ["분식", "카페", "편의점", "분식점"],
+      "allowed_categories": ["고기", "구이", "삼겹살", "갈비", "한식"],
+      "min_recommendations": 3
+    }
+  },
+  {
+    "id": "TC003",
+    "description": "홍대 2명 점심 카페 — 소규모 카페 시나리오",
+    "input": {
+      "message": "홍대 2명이서 점심에 카페 가려고",
+      "session_id": "eval_tc003"
+    },
+    "expected": {
+      "location_name": "홍대",
+      "purpose": "카페",
+      "time_slot": "점심",
+      "people_count": 2,
+      "category": "",
+      "expected_places": [],
+      "forbidden_categories": ["노래방", "볼링장", "술집"],
+      "allowed_categories": ["카페", "커피", "디저트", "브런치카페"],
+      "min_recommendations": 3
+    }
+  },
+  {
+    "id": "TC004",
+    "description": "신촌 10명 저녁 회식 — 대규모 단체 시나리오",
+    "input": {
+      "message": "신촌역 근처 10명 저녁 회식 장소 알려줘",
+      "session_id": "eval_tc004"
+    },
+    "expected": {
+      "location_name": "신촌",
+      "purpose": "회식",
+      "time_slot": "저녁",
+      "people_count": 10,
+      "category": "",
+      "expected_places": [],
+      "forbidden_categories": ["카페", "분식"],
+      "allowed_categories": ["음식점", "한식", "고기", "구이", "이자카야"],
+      "min_recommendations": 3,
+      "notes": "단체석 언급 필요"
+    }
+  },
+  {
+    "id": "TC005",
+    "description": "이태원 이자카야 — 술집 명시 시나리오",
+    "input": {
+      "message": "이태원 근처 3명이서 이자카야 가고 싶어",
+      "session_id": "eval_tc005"
+    },
+    "expected": {
+      "location_name": "이태원",
+      "purpose": "술자리",
+      "time_slot": "저녁",
+      "people_count": 3,
+      "category": "이자카야",
+      "expected_places": [],
+      "forbidden_categories": ["카페", "분식", "패스트푸드"],
+      "allowed_categories": ["이자카야", "술집", "일식", "바"],
+      "min_recommendations": 3
+    }
+  },
+  {
+    "id": "TC006",
+    "description": "중간지점 — 강남역+홍대입구 2인 저녁",
+    "input": {
+      "message": "강남역이랑 홍대입구 중간지점에서 2명이서 저녁 먹으려고",
+      "session_id": "eval_tc006"
+    },
+    "expected": {
+      "is_midpoint": true,
+      "purpose": "식사",
+      "time_slot": "저녁",
+      "people_count": 2,
+      "category": "",
+      "expected_places": [],
+      "forbidden_categories": ["카페", "분식"],
+      "allowed_categories": ["음식점", "한식", "일식", "양식"],
+      "min_recommendations": 3
+    }
+  },
+  {
+    "id": "TC007",
+    "description": "스터디카페 — 목적 기반 시나리오",
+    "input": {
+      "message": "건대입구 4명 스터디할 카페 찾아줘",
+      "session_id": "eval_tc007"
+    },
+    "expected": {
+      "location_name": "건대입구",
+      "purpose": "스터디",
+      "time_slot": "낮",
+      "people_count": 4,
+      "category": "",
+      "expected_places": [],
+      "forbidden_categories": ["술집", "노래방"],
+      "allowed_categories": ["카페", "스터디카페", "북카페"],
+      "min_recommendations": 3
+    }
+  }
+]

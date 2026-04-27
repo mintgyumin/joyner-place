@@ -1,0 +1,164 @@
+[
+  {
+    "id": "TC002",
+    "description": "강남역 5명 저녁 고깃집 — 카테고리 명시 시나리오",
+    "input": "강남역 5명 저녁 고깃집 추천해줘",
+    "recommendation_count": 0,
+    "rule_eval": {
+      "passed": false,
+      "score": 0.889,
+      "checks": {
+        "result_count_ok": false,
+        "no_duplicate": true,
+        "all_have_place_name": true,
+        "all_have_address": true,
+        "all_have_place_url": true,
+        "all_have_reason": true,
+        "all_have_category": true,
+        "reason_length_ok": true,
+        "all_have_coords": true
+      },
+      "issues": [
+        "추천 개수 0개 (기대: 3~10개)"
+      ]
+    },
+    "retrieval_eval": {
+      "precision_at_k": null,
+      "recall_at_k": null,
+      "note": "expected_places 없음"
+    },
+    "coverage_eval": {
+      "overall_coverage": 0.0,
+      "location_proximity": {
+        "pass_rate": 0.0,
+        "within_range": 0,
+        "total": 0
+      },
+      "category_match": {
+        "pass_rate": 0.0,
+        "matched": 0,
+        "total": 0
+      },
+      "people_capacity": {
+        "pass_rate": 0.0,
+        "mentioned": 0,
+        "total": 0
+      },
+      "time_relevance": {
+        "pass_rate": 0.0,
+        "mentioned": 0,
+        "total": 0
+      }
+    },
+    "faithfulness_eval": {
+      "avg_faithfulness": null,
+      "note": "추천 결과 없음"
+    },
+    "forbidden_violations": [],
+    "overall_pass": false,
+    "recommendations_preview": []
+  },
+  {
+    "id": "TC006",
+    "description": "중간지점 — 강남역+홍대입구 2인 저녁",
+    "input": "강남역이랑 홍대입구 중간지점에서 2명이서 저녁 먹으려고",
+    "recommendation_count": 2,
+    "rule_eval": {
+      "passed": false,
+      "score": 0.889,
+      "checks": {
+        "result_count_ok": false,
+        "no_duplicate": true,
+        "all_have_place_name": true,
+        "all_have_address": true,
+        "all_have_place_url": true,
+        "all_have_reason": true,
+        "all_have_category": true,
+        "reason_length_ok": true,
+        "all_have_coords": true
+      },
+      "issues": [
+        "추천 개수 2개 (기대: 3~10개)"
+      ]
+    },
+    "retrieval_eval": {
+      "precision_at_k": null,
+      "recall_at_k": null,
+      "note": "expected_places 없음"
+    },
+    "coverage_eval": {
+      "overall_coverage": 1.0,
+      "location_proximity": {
+        "pass_rate": 1.0,
+        "within_range": 2,
+        "total": 2,
+        "max_distance_m": 3000
+      },
+      "category_match": {
+        "pass_rate": 1.0,
+        "matched": 2,
+        "total": 2,
+        "target": "식사",
+        "details": [
+          {
+            "place": "말방국밥 용산본점",
+            "category": "국밥",
+            "match": true
+          },
+          {
+            "place": "능동미나리",
+            "category": "한식",
+            "match": true
+          }
+        ]
+      },
+      "people_capacity": {
+        "pass_rate": 1.0,
+        "mentioned": 2,
+        "total": 2,
+        "people_count": 2
+      },
+      "time_relevance": {
+        "pass_rate": 1.0,
+        "mentioned": 2,
+        "total": 2,
+        "time_slot": "저녁"
+      }
+    },
+    "faithfulness_eval": {
+      "avg_faithfulness": 0.75,
+      "per_place": [
+        {
+          "place_name": "말방국밥 용산본점",
+          "score": 0.8,
+          "faithful": true,
+          "issues": [
+            "'2명이 저녁 회식으로 부담 없이 즐기기 좋은'은 장소 정보에 명확히 언급되지 않아 추론에 기반함",
+            "'빠르게 식사하면서 담백한 맛'도 구체적 근거 부족"
+          ]
+        },
+        {
+          "place_name": "능동미나리",
+          "score": 0.7,
+          "faithful": true,
+          "issues": [
+            "추천 이유에 '아늑한 분위기'와 '조용한 회식 자리 적합'이라는 내용이 장소 정보에 명확히 근거되지 않음",
+            "'다양한 한식 메뉴'라는 표현이 구체적 메뉴 정보 없이 추론에 의존함"
+          ]
+        }
+      ]
+    },
+    "forbidden_violations": [],
+    "overall_pass": false,
+    "recommendations_preview": [
+      {
+        "place_name": "말방국밥 용산본점",
+        "category": "국밥"
+      },
+      {
+        "place_name": "능동미나리",
+        "category": "한식"
+      }
+    ]
+  }
+]

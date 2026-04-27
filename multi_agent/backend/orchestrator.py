@@ -159,6 +159,8 @@ class MultiAgentOrchestrator:
 
         category = loc_result.get("category", "")
         is_wide = _is_wide_area(location_name)
+        if is_midpoint:
+            is_wide = True  # 중간지점은 항상 넓은 반경으로 검색
         final_recommendations = None
         final_validation = None
         retry_count = 0
@@ -177,6 +179,7 @@ class MultiAgentOrchestrator:
                 people_count=people_count,
                 is_wide_area=is_wide,
                 category=category,
+                participant_coords=participant_coords,
             )
             search_ms = int((time.time() - t0) * 1000)
 
