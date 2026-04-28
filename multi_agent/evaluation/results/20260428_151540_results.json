@@ -1,0 +1,973 @@
+[
+  {
+    "id": "TC001",
+    "description": "강남역 5명 저녁 회식 — 음식점 기본 시나리오",
+    "input": "강남역 5명 저녁 회식 장소 추천해줘",
+    "recommendation_count": 3,
+    "rule_eval": {
+      "passed": true,
+      "score": 1.0,
+      "checks": {
+        "result_count_ok": true,
+        "no_duplicate": true,
+        "all_have_place_name": true,
+        "all_have_address": true,
+        "all_have_place_url": true,
+        "all_have_reason": true,
+        "all_have_category": true,
+        "reason_length_ok": true,
+        "all_have_coords": true
+      },
+      "issues": []
+    },
+    "retrieval_eval": {
+      "precision_at_k": null,
+      "recall_at_k": null,
+      "note": "expected_places 없음"
+    },
+    "coverage_eval": {
+      "overall_coverage": 1.0,
+      "location_proximity": {
+        "pass_rate": 1.0,
+        "within_range": 3,
+        "total": 3,
+        "max_distance_m": 3000
+      },
+      "category_match": {
+        "pass_rate": 1.0,
+        "matched": 3,
+        "total": 3,
+        "target": "회식",
+        "details": [
+          {
+            "place": "미진식당",
+            "category": "한식",
+            "match": true
+          },
+          {
+            "place": "신복면관",
+            "category": "중식",
+            "match": true
+          },
+          {
+            "place": "오맛난집",
+            "category": "한식",
+            "match": true
+          }
+        ]
+      },
+      "people_capacity": {
+        "pass_rate": 1.0,
+        "mentioned": 3,
+        "total": 3,
+        "people_count": 5
+      },
+      "time_relevance": {
+        "pass_rate": 1.0,
+        "mentioned": 3,
+        "total": 3,
+        "time_slot": "저녁"
+      }
+    },
+    "faithfulness_eval": {
+      "avg_faithfulness": 0.8,
+      "per_place": [
+        {
+          "place_name": "미진식당",
+          "score": 0.8,
+          "faithful": true,
+          "issues": [
+            "추천 이유에 '다양한 메뉴'와 '넉넉한 공간'에 대한 구체적 근거가 장소 정보에 없음",
+            "'접근성이 좋다'는 표현이 거리 정보(91m)로 추론 가능하나, 구체적 교통편 정보가 없어 다소 일반적임"
+          ]
+        },
+        {
+          "place_name": "신복면관",
+          "score": 0.8,
+          "faithful": true,
+          "issues": [
+            "5명 저녁 회식에 알맞은 메뉴 구성 여부는 장소 정보에 명확히 나타나 있지 않음",
+            "만족도가 높을 것이라는 주장은 근거 부족"
+          ]
+        },
+        {
+          "place_name": "오맛난집",
+          "score": 0.8,
+          "faithful": true,
+          "issues": [
+            "메뉴 다양성에 대한 구체적 정보가 없어 추론에 한계가 있음",
+            "5명 저녁 회식 적합성에 대한 구체적 근거 부족"
+          ]
+        }
+      ]
+    },
+    "forbidden_violations": [],
+    "overall_pass": true,
+    "recommendations_preview": [
+      {
+        "place_name": "미진식당",
+        "category": "한식"
+      },
+      {
+        "place_name": "신복면관",
+        "category": "중식"
+      },
+      {
+        "place_name": "오맛난집",
+        "category": "한식"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "description": "강남역 5명 저녁 고깃집 — 카테고리 명시 시나리오",
+    "input": "강남역 5명 저녁 고깃집 추천해줘",
+    "recommendation_count": 2,
+    "rule_eval": {
+      "passed": false,
+      "score": 0.889,
+      "checks": {
+        "result_count_ok": false,
+        "no_duplicate": true,
+        "all_have_place_name": true,
+        "all_have_address": true,
+        "all_have_place_url": true,
+        "all_have_reason": true,
+        "all_have_category": true,
+        "reason_length_ok": true,
+        "all_have_coords": true
+      },
+      "issues": [
+        "추천 개수 2개 (기대: 3~10개)"
+      ]
+    },
+    "retrieval_eval": {
+      "precision_at_k": null,
+      "recall_at_k": null,
+      "note": "expected_places 없음"
+    },
+    "coverage_eval": {
+      "overall_coverage": 1.0,
+      "location_proximity": {
+        "pass_rate": 1.0,
+        "within_range": 2,
+        "total": 2,
+        "max_distance_m": 3000
+      },
+      "category_match": {
+        "pass_rate": 1.0,
+        "matched": 2,
+        "total": 2,
+        "target": "고깃집",
+        "details": [
+          {
+            "place": "라라식당",
+            "category": "육류,고기",
+            "match": true
+          },
+          {
+            "place": "딸부자네불백 강남역9번출구점",
+            "category": "육류,고기",
+            "match": true
+          }
+        ]
+      },
+      "people_capacity": {
+        "pass_rate": 1.0,
+        "mentioned": 2,
+        "total": 2,
+        "people_count": 5
+      },
+      "time_relevance": {
+        "pass_rate": 1.0,
+        "mentioned": 2,
+        "total": 2,
+        "time_slot": "저녁"
+      }
+    },
+    "faithfulness_eval": {
+      "avg_faithfulness": 0.9,
+      "per_place": [
+        {
+          "place_name": "라라식당",
+          "score": 1.0,
+          "faithful": true,
+          "issues": []
+        },
+        {
+          "place_name": "딸부자네불백 강남역9번출구점",
+          "score": 0.8,
+          "faithful": true,
+          "issues": [
+            "공간이 넓다는 점은 장소 정보에 명시되어 있지 않아 추론에 근거가 부족함",
+            "다양한 메뉴 구성에 대한 구체적 정보가 없어 과장 가능성 있음"
+          ]
+        }
+      ]
+    },
+    "forbidden_violations": [],
+    "overall_pass": false,
+    "recommendations_preview": [
+      {
+        "place_name": "라라식당",
+        "category": "육류,고기"
+      },
+      {
+        "place_name": "딸부자네불백 강남역9번출구점",
+        "category": "육류,고기"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "description": "홍대 2명 점심 카페 — 소규모 카페 시나리오",
+    "input": "홍대 2명이서 점심에 카페 가려고",
+    "recommendation_count": 5,
+    "rule_eval": {
+      "passed": true,
+      "score": 1.0,
+      "checks": {
+        "result_count_ok": true,
+        "no_duplicate": true,
+        "all_have_place_name": true,
+        "all_have_address": true,
+        "all_have_place_url": true,
+        "all_have_reason": true,
+        "all_have_category": true,
+        "reason_length_ok": true,
+        "all_have_coords": true
+      },
+      "issues": []
+    },
+    "retrieval_eval": {
+      "precision_at_k": null,
+      "recall_at_k": null,
+      "note": "expected_places 없음"
+    },
+    "coverage_eval": {
+      "overall_coverage": 1.0,
+      "location_proximity": {
+        "pass_rate": 1.0,
+        "within_range": 5,
+        "total": 5,
+        "max_distance_m": 3000
+      },
+      "category_match": {
+        "pass_rate": 1.0,
+        "matched": 5,
+        "total": 5,
+        "target": "카페",
+        "details": [
+          {
+            "place": "러브엔젤 메이드카페",
+            "category": "카페",
+            "match": true
+          },
+          {
+            "place": "다이버시티",
+            "category": "카페",
+            "match": true
+          },
+          {
+            "place": "커피덕",
+            "category": "카페",
+            "match": true
+          },
+          {
+            "place": "버티컬커피",
+            "category": "카페",
+            "match": true
+          },
+          {
+            "place": "카페단추",
+            "category": "카페",
+            "match": true
+          }
+        ]
+      },
+      "people_capacity": {
+        "pass_rate": 1.0,
+        "mentioned": 5,
+        "total": 5,
+        "people_count": 2
+      },
+      "time_relevance": {
+        "pass_rate": 1.0,
+        "mentioned": 5,
+        "total": 5,
+        "time_slot": "점심"
+      }
+    },
+    "faithfulness_eval": {
+      "avg_faithfulness": 0.8,
+      "per_place": [
+        {
+          "place_name": "러브엔젤 메이드카페",
+          "score": 0.8,
+          "faithful": true,
+          "issues": [
+            "홍대 중심가 위치는 주소로 추정 가능하나, '아기자기한 분위기'와 '조용한 점심 모임에 적합' 여부는 장소 정보에 명시되어 있지 않아 추론에 근거가 부족함"
+          ]
+        },
+        {
+          "place_name": "다이버시티",
+          "score": 0.8,
+          "faithful": true,
+          "issues": [
+            "좌석 배치 및 공간의 편안함에 대한 구체적 정보가 장소 정보에 포함되어 있지 않아 추론에 일부 불확실성이 있음"
+          ]
+        },
+        {
+          "place_name": "커피덕",
+          "score": 0.8,
+          "faithful": true,
+          "issues": [
+            "조용한 분위기 여부는 장소 정보에 명시되어 있지 않아 추론에 근거가 부족함"
+          ]
+        },
+        {
+          "place_name": "버티컬커피",
+          "score": 0.8,
+          "faithful": true,
+          "issues": [
+            "추천 이유에 언급된 '카페 인테리어와 분위기'는 장소 정보에 명시되어 있지 않아 추론에 기반한 주장이지만, 과장이나 허위는 아님",
+            "'2명이 점심시간에 방문하여 여유롭게 대화할 수 있다'는 구체적인 방문 상황은 장소 정보에 없으나 일반적인 카페 이용 상황으로 합리적 추론임"
+          ]
+        },
+        {
+          "place_name": "카페단추",
+          "score": 0.8,
+          "faithful": true,
+          "issues": [
+            "추천 이유에 '아늑한 공간'과 '조용한 카페 모임에 적합'이라는 내용은 장소 정보에 명시되어 있지 않아 추론에 근거한 표현임"
+          ]
+        }
+      ]
+    },
+    "forbidden_violations": [],
+    "overall_pass": true,
+    "recommendations_preview": [
+      {
+        "place_name": "러브엔젤 메이드카페",
+        "category": "카페"
+      },
+      {
+        "place_name": "다이버시티",
+        "category": "카페"
+      },
+      {
+        "place_name": "커피덕",
+        "category": "카페"
+      },
+      {
+        "place_name": "버티컬커피",
+        "category": "카페"
+      },
+      {
+        "place_name": "카페단추",
+        "category": "카페"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "description": "신촌 10명 저녁 회식 — 대규모 단체 시나리오",
+    "input": "신촌역 근처 10명 저녁 회식 장소 알려줘",
+    "recommendation_count": 5,
+    "rule_eval": {
+      "passed": true,
+      "score": 1.0,
+      "checks": {
+        "result_count_ok": true,
+        "no_duplicate": true,
+        "all_have_place_name": true,
+        "all_have_address": true,
+        "all_have_place_url": true,
+        "all_have_reason": true,
+        "all_have_category": true,
+        "reason_length_ok": true,
+        "all_have_coords": true
+      },
+      "issues": []
+    },
+    "retrieval_eval": {
+      "precision_at_k": null,
+      "recall_at_k": null,
+      "note": "expected_places 없음"
+    },
+    "coverage_eval": {
+      "overall_coverage": 1.0,
+      "location_proximity": {
+        "pass_rate": 1.0,
+        "within_range": 5,
+        "total": 5,
+        "max_distance_m": 3000
+      },
+      "category_match": {
+        "pass_rate": 1.0,
+        "matched": 5,
+        "total": 5,
+        "target": "회식",
+        "details": [
+          {
+            "place": "동해해물탕",
+            "category": "매운탕,해물탕",
+            "match": true
+          },
+          {
+            "place": "차이797 플러스 현대신촌점",
+            "category": "중식",
+            "match": true
+          },
+          {
+            "place": "돌장각",
+            "category": "한식",
+            "match": true
+          },
+          {
+            "place": "봉혜자반상 현대백화점신촌",
+            "category": "한식",
+            "match": true
+          },
+          {
+            "place": "고향전주비빔밥 현대백화점신촌점",
+            "category": "한식",
+            "match": true
+          }
+        ]
+      },
+      "people_capacity": {
+        "pass_rate": 1.0,
+        "mentioned": 5,
+        "total": 5,
+        "people_count": 10
+      },
+      "time_relevance": {
+        "pass_rate": 1.0,
+        "mentioned": 5,
+        "total": 5,
+        "time_slot": "저녁"
+      }
+    },
+    "faithfulness_eval": {
+      "avg_faithfulness": 0.68,
+      "per_place": [
+        {
+          "place_name": "동해해물탕",
+          "score": 0.6,
+          "faithful": false,
+          "issues": [
+            "10명이 저녁 회식하기에 충분한 공간 여부는 장소 정보에 없음",
+            "단체 모임에 적합한 분위기 여부는 장소 정보에 없음",
+            "다양한 해산물 요리를 즐길 수 있다는 구체적 메뉴 정보 없음"
+          ]
+        },
+        {
+          "place_name": "차이797 플러스 현대신촌점",
+          "score": 0.8,
+          "faithful": true,
+          "issues": [
+            "10명 규모의 저녁 회식 적합성 및 단체석 보유 여부는 장소 정보에 명시되어 있지 않아 추론에 근거함"
+          ]
+        },
+        {
+          "place_name": "돌장각",
+          "score": 0.5,
+          "faithful": false,
+          "issues": [
+            "10명 회식에 적합한 넓은 좌석 보유 여부가 장소 정보에 없음",
+            "전통적인 한식 메뉴 제공 여부가 명확하지 않음",
+            "단체 모임 분위기 적합성 근거 부족"
+          ]
+        },
+        {
+          "place_name": "봉혜자반상 현대백화점신촌",
+          "score": 0.8,
+          "faithful": true,
+          "issues": [
+            "단체 손님을 위한 서비스 및 충분한 공간에 대한 구체적 정보가 장소 정보에 명시되어 있지 않음"
+          ]
+        },
+        {
+          "place_name": "고향전주비빔밥 현대백화점신촌점",
+          "score": 0.7,
+          "faithful": false,
+          "issues": [
+            "10명이 저녁 회식하기에 적합한 좌석 여부가 장소 정보에 없음",
+            "단체 손님을 위한 편의 시설 여부가 장소 정보에 없음",
+            "맛있는 한식 메뉴라는 주관적 평가가 근거 없음"
+          ]
+        }
+      ]
+    },
+    "forbidden_violations": [],
+    "overall_pass": true,
+    "recommendations_preview": [
+      {
+        "place_name": "동해해물탕",
+        "category": "매운탕,해물탕"
+      },
+      {
+        "place_name": "차이797 플러스 현대신촌점",
+        "category": "중식"
+      },
+      {
+        "place_name": "돌장각",
+        "category": "한식"
+      },
+      {
+        "place_name": "봉혜자반상 현대백화점신촌",
+        "category": "한식"
+      },
+      {
+        "place_name": "고향전주비빔밥 현대백화점신촌점",
+        "category": "한식"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "description": "이태원 이자카야 — 술집 명시 시나리오",
+    "input": "이태원 근처 3명이서 이자카야 가고 싶어",
+    "recommendation_count": 5,
+    "rule_eval": {
+      "passed": true,
+      "score": 1.0,
+      "checks": {
+        "result_count_ok": true,
+        "no_duplicate": true,
+        "all_have_place_name": true,
+        "all_have_address": true,
+        "all_have_place_url": true,
+        "all_have_reason": true,
+        "all_have_category": true,
+        "reason_length_ok": true,
+        "all_have_coords": true
+      },
+      "issues": []
+    },
+    "retrieval_eval": {
+      "precision_at_k": null,
+      "recall_at_k": null,
+      "note": "expected_places 없음"
+    },
+    "coverage_eval": {
+      "overall_coverage": 1.0,
+      "location_proximity": {
+        "pass_rate": 1.0,
+        "within_range": 5,
+        "total": 5,
+        "max_distance_m": 3000
+      },
+      "category_match": {
+        "pass_rate": 1.0,
+        "matched": 5,
+        "total": 5,
+        "target": "이자카야",
+        "details": [
+          {
+            "place": "엔 이자카야",
+            "category": "일본식주점",
+            "match": true
+          },
+          {
+            "place": "탑펍앤이자카야",
+            "category": "호프,요리주점",
+            "match": true
+          },
+          {
+            "place": "이자카야치로 이태원본점",
+            "category": "일본식주점",
+            "match": true
+          },
+          {
+            "place": "이진칸",
+            "category": "일본식주점",
+            "match": true
+          },
+          {
+            "place": "미도리야",
+            "category": "일본식주점",
+            "match": true
+          }
+        ]
+      },
+      "people_capacity": {
+        "pass_rate": 1.0,
+        "mentioned": 5,
+        "total": 5,
+        "people_count": 3
+      },
+      "time_relevance": {
+        "pass_rate": 1.0,
+        "mentioned": 5,
+        "total": 5,
+        "time_slot": "저녁"
+      }
+    },
+    "faithfulness_eval": {
+      "avg_faithfulness": 0.82,
+      "per_place": [
+        {
+          "place_name": "엔 이자카야",
+          "score": 0.8,
+          "faithful": true,
+          "issues": [
+            "추천 이유에 언급된 '아늑한 분위기'와 '조용한 대화 가능'은 장소 정보에 명시되어 있지 않아 추론에 근거한 표현임",
+            "'다양한 술과 안주' 역시 구체적 정보가 없어 일반적인 이자카야 특성에 기반한 추론임"
+          ]
+        },
+        {
+          "place_name": "탑펍앤이자카야",
+          "score": 0.8,
+          "faithful": true,
+          "issues": [
+            "접근성이 좋다는 점은 '이태원 중심가' 위치로 추론 가능하나, '여유로운 좌석 배치'는 장소 정보에 근거가 없어 추론 불가"
+          ]
+        },
+        {
+          "place_name": "이자카야치로 이태원본점",
+          "score": 0.8,
+          "faithful": true,
+          "issues": [
+            "안주 메뉴의 신선도 및 다양성에 대한 구체적 정보가 장소 정보에 명시되어 있지 않음",
+            "분위기에 대한 평가는 주관적이며 장소 정보에 직접적으로 언급되어 있지 않음"
+          ]
+        },
+        {
+          "place_name": "이진칸",
+          "score": 0.9,
+          "faithful": true,
+          "issues": [
+            "3명 모임에 적합하다는 구체적 정보가 장소 정보에 없음",
+            "다양한 일본식 술과 안주 제공 여부가 명확하지 않음"
+          ]
+        },
+        {
+          "place_name": "미도리야",
+          "score": 0.8,
+          "faithful": true,
+          "issues": [
+            "깔끔한 인테리어와 친절한 서비스는 장소 정보에 명시되어 있지 않아 추론에 기반한 주장이지만, 과장되거나 허위는 아님",
+            "이태원 중심과 가까워 접근성이 뛰어나다는 점은 거리 정보(136m)로 합리적 추론 가능"
+          ]
+        }
+      ]
+    },
+    "forbidden_violations": [],
+    "overall_pass": true,
+    "recommendations_preview": [
+      {
+        "place_name": "엔 이자카야",
+        "category": "일본식주점"
+      },
+      {
+        "place_name": "탑펍앤이자카야",
+        "category": "호프,요리주점"
+      },
+      {
+        "place_name": "이자카야치로 이태원본점",
+        "category": "일본식주점"
+      },
+      {
+        "place_name": "이진칸",
+        "category": "일본식주점"
+      },
+      {
+        "place_name": "미도리야",
+        "category": "일본식주점"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "description": "중간지점 — 강남역+홍대입구 2인 저녁",
+    "input": "강남역이랑 홍대입구 중간지점에서 2명이서 저녁 먹으려고",
+    "recommendation_count": 4,
+    "rule_eval": {
+      "passed": true,
+      "score": 1.0,
+      "checks": {
+        "result_count_ok": true,
+        "no_duplicate": true,
+        "all_have_place_name": true,
+        "all_have_address": true,
+        "all_have_place_url": true,
+        "all_have_reason": true,
+        "all_have_category": true,
+        "reason_length_ok": true,
+        "all_have_coords": true
+      },
+      "issues": []
+    },
+    "retrieval_eval": {
+      "precision_at_k": null,
+      "recall_at_k": null,
+      "note": "expected_places 없음"
+    },
+    "coverage_eval": {
+      "overall_coverage": 0.938,
+      "location_proximity": {
+        "pass_rate": 0.75,
+        "within_range": 3,
+        "total": 4,
+        "max_distance_m": 3000
+      },
+      "category_match": {
+        "pass_rate": 1.0,
+        "matched": 4,
+        "total": 4,
+        "target": "식사",
+        "details": [
+          {
+            "place": "말방국밥 용산본점",
+            "category": "국밥",
+            "match": true
+          },
+          {
+            "place": "더맛집",
+            "category": "한식뷔페",
+            "match": true
+          },
+          {
+            "place": "우리집식당",
+            "category": "한식",
+            "match": true
+          },
+          {
+            "place": "진미함바식당",
+            "category": "한식",
+            "match": true
+          }
+        ]
+      },
+      "people_capacity": {
+        "pass_rate": 1.0,
+        "mentioned": 4,
+        "total": 4,
+        "people_count": 2
+      },
+      "time_relevance": {
+        "pass_rate": 1.0,
+        "mentioned": 4,
+        "total": 4,
+        "time_slot": "저녁"
+      }
+    },
+    "faithfulness_eval": {
+      "avg_faithfulness": 0.725,
+      "per_place": [
+        {
+          "place_name": "말방국밥 용산본점",
+          "score": 0.7,
+          "faithful": false,
+          "issues": [
+            "규모에 대한 정보가 장소 정보에 없음",
+            "가격대 및 메뉴 구성에 대한 정보가 없음"
+          ]
+        },
+        {
+          "place_name": "더맛집",
+          "score": 0.9,
+          "faithful": true,
+          "issues": []
+        },
+        {
+          "place_name": "우리집식당",
+          "score": 0.5,
+          "faithful": false,
+          "issues": [
+            "조용하고 편안한 분위기, 음식의 질 안정성 등은 장소 정보에 근거하지 않은 추론임",
+            "2명 저녁 회식에 적합하다는 내용도 장소 정보에서 확인 불가"
+          ]
+        },
+        {
+          "place_name": "진미함바식당",
+          "score": 0.8,
+          "faithful": true,
+          "issues": [
+            "거리 3582m는 다소 거리가 있다는 표현과 일치하나, 2명 저녁 회식에 적당한 환경과 메뉴 구성에 대한 구체적 정보가 장소 정보에 없어 추론에 근거가 부족함"
+          ]
+        }
+      ]
+    },
+    "forbidden_violations": [],
+    "overall_pass": true,
+    "recommendations_preview": [
+      {
+        "place_name": "말방국밥 용산본점",
+        "category": "국밥"
+      },
+      {
+        "place_name": "더맛집",
+        "category": "한식뷔페"
+      },
+      {
+        "place_name": "우리집식당",
+        "category": "한식"
+      },
+      {
+        "place_name": "진미함바식당",
+        "category": "한식"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "description": "스터디카페 — 목적 기반 시나리오",
+    "input": "건대입구 4명 스터디할 카페 찾아줘",
+    "recommendation_count": 5,
+    "rule_eval": {
+      "passed": true,
+      "score": 1.0,
+      "checks": {
+        "result_count_ok": true,
+        "no_duplicate": true,
+        "all_have_place_name": true,
+        "all_have_address": true,
+        "all_have_place_url": true,
+        "all_have_reason": true,
+        "all_have_category": true,
+        "reason_length_ok": true,
+        "all_have_coords": true
+      },
+      "issues": []
+    },
+    "retrieval_eval": {
+      "precision_at_k": null,
+      "recall_at_k": null,
+      "note": "expected_places 없음"
+    },
+    "coverage_eval": {
+      "overall_coverage": 0.75,
+      "location_proximity": {
+        "pass_rate": 1.0,
+        "within_range": 5,
+        "total": 5,
+        "max_distance_m": 3000
+      },
+      "category_match": {
+        "pass_rate": 1.0,
+        "matched": 5,
+        "total": 5,
+        "target": "스터디",
+        "details": [
+          {
+            "place": "룸카페티파니",
+            "category": "테마카페",
+            "match": true
+          },
+          {
+            "place": "이벤트123 건대점",
+            "category": "테마카페",
+            "match": true
+          },
+          {
+            "place": "카페라이츠",
+            "category": "커피전문점",
+            "match": true
+          },
+          {
+            "place": "걈",
+            "category": "카페",
+            "match": true
+          },
+          {
+            "place": "꿈꾸다917",
+            "category": "카페",
+            "match": true
+          }
+        ]
+      },
+      "people_capacity": {
+        "pass_rate": 1.0,
+        "mentioned": 5,
+        "total": 5,
+        "people_count": 4
+      },
+      "time_relevance": {
+        "pass_rate": 0.0,
+        "mentioned": 0,
+        "total": 5,
+        "time_slot": "낮"
+      }
+    },
+    "faithfulness_eval": {
+      "avg_faithfulness": 0.68,
+      "per_place": [
+        {
+          "place_name": "룸카페티파니",
+          "score": 0.8,
+          "faithful": true,
+          "issues": [
+            "추천 이유에 '조용하고 집중할 수 있는 공간'이라는 내용은 장소 정보에 명시되어 있지 않아 추론에 기반함",
+            "'건대입구역에서 매우 가깝다'는 표현은 거리 34m로 합리적이나, 역명은 장소 정보에 없으므로 외부 정보에 의존함"
+          ]
+        },
+        {
+          "place_name": "이벤트123 건대점",
+          "score": 0.7,
+          "faithful": false,
+          "issues": [
+            "조용한 환경 제공 여부는 장소 정보에 명시되어 있지 않음",
+            "4명이 저녁 스터디하기 적합하다는 점은 장소 정보로부터 추론 불가"
+          ]
+        },
+        {
+          "place_name": "카페라이츠",
+          "score": 0.6,
+          "faithful": false,
+          "issues": [
+            "아늑한 분위기, 편안한 좌석 배치, 집중에 도움을 준다는 내용은 장소 정보에 근거하지 않음",
+            "건대입구 인근이라는 구체적 위치 정보가 장소 정보에 없음",
+            "거리 정보만으로 접근성 우수 여부 판단 불가"
+          ]
+        },
+        {
+          "place_name": "걈",
+          "score": 0.7,
+          "faithful": false,
+          "issues": [
+            "카페 공간이 넉넉하다는 구체적 정보가 없음",
+            "조용한 분위기 여부에 대한 정보가 없음",
+            "건대입구와의 거리나 접근성에 대한 정보가 없음"
+          ]
+        },
+        {
+          "place_name": "꿈꾸다917",
+          "score": 0.6,
+          "faithful": false,
+          "issues": [
+            "추천 이유에 인테리어와 환경에 대한 구체적 정보가 장소 정보에 없음",
+            "접근성에 대한 구체적 근거가 부족함",
+            "4명 저녁 스터디에 적합하다는 내용은 추론 불가"
+          ]
+        }
+      ]
+    },
+    "forbidden_violations": [],
+    "overall_pass": true,
+    "recommendations_preview": [
+      {
+        "place_name": "룸카페티파니",
+        "category": "테마카페"
+      },
+      {
+        "place_name": "이벤트123 건대점",
+        "category": "테마카페"
+      },
+      {
+        "place_name": "카페라이츠",
+        "category": "커피전문점"
+      },
+      {
+        "place_name": "걈",
+        "category": "카페"
+      },
+      {
+        "place_name": "꿈꾸다917",
+        "category": "카페"
+      }
+    ]
+  }
+]
