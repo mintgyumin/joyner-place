@@ -300,17 +300,18 @@ SECRET_KEY=your-jwt-secret
 
 ## 스크린샷
 
-### 채팅 인터페이스
-
-<p align="center">
-  <img src="../docs/images/multi_agent_chat.png" alt="채팅 인터페이스" width="680"/>
-</p>
-
-### 중간지점 추천
-
-<p align="center">
-  <img src="../docs/images/multi_agent_midpoint.png" alt="중간지점 추천" width="680"/>
-</p>
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="../docs/images/multi_agent_chat.png" width="100%"/>
+      <br/><b>채팅 인터페이스</b>
+    </td>
+    <td align="center" width="50%">
+      <img src="../docs/images/multi_agent_midpoint.png" width="100%"/>
+      <br/><b>중간지점 추천</b>
+    </td>
+  </tr>
+</table>
 
 ---
 
