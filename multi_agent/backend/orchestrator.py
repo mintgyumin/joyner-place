@@ -20,7 +20,7 @@ from agents import location_agent, search_agent, recommend_agent, validation_age
 
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", "").strip())
 
 MAX_RETRIES = 3
 WIDE_AREA_KEYS = {

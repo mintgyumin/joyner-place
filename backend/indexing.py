@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 from rank_bm25 import BM25Okapi
 
 load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", "").strip())
 
 # text-embedding-3-small: 비용이 저렴하고 성능이 충분한 임베딩 모델
 EMBEDDING_MODEL = "text-embedding-3-small"

@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", "").strip())
 
 _SYSTEM = "당신은 장소 추천 품질을 평가하는 전문가입니다. 주어진 기준에 따라 JSON으로만 응답하세요."
 

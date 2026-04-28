@@ -28,7 +28,7 @@ load_dotenv()
 KAKAO_API_KEY = os.getenv("KAKAO_API_KEY")
 KAKAO_HEADERS = {"Authorization": f"KakaoAK {KAKAO_API_KEY}"}
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", "").strip())
 EMBEDDING_MODEL = "text-embedding-3-small"
 
 # search_places_tool 결과를 임시 보관 (search_id → 데이터)

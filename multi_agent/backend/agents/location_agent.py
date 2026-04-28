@@ -19,7 +19,7 @@ from tools import get_coords, calculate_midpoint, WIDE_AREA_COORDS
 
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", "").strip())
 
 _PROMPT = (Path(__file__).parent.parent / "prompts" / "location_agent_prompt.txt").read_text(encoding="utf-8")
 

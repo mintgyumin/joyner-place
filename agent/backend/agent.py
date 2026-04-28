@@ -22,7 +22,7 @@ from tools import TOOL_SCHEMAS, execute_tool
 
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", "").strip())
 
 # 시스템 프롬프트 로드
 _PROMPT_PATH = Path(__file__).parent / "prompts" / "system_prompt.txt"

@@ -20,7 +20,7 @@ load_dotenv()
 KAKAO_API_KEY = os.getenv("KAKAO_API_KEY")
 KAKAO_HEADERS = {"Authorization": f"KakaoAK {KAKAO_API_KEY}"}
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", "").strip())
 EMBEDDING_MODEL = "text-embedding-3-small"
 
 PURPOSE_KEYWORD_MAP = {
