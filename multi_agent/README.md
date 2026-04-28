@@ -306,18 +306,6 @@ SECRET_KEY=your-jwt-secret
   <img src="../docs/images/multi_agent_chat.png" alt="채팅 인터페이스" width="680"/>
 </p>
 
-### 추천 결과 카드
-
-<p align="center">
-  <img src="../docs/images/multi_agent_results.png" alt="추천 결과" width="680"/>
-</p>
-
-### 카카오 지도 통합
-
-<p align="center">
-  <img src="../docs/images/multi_agent_map.png" alt="카카오 지도" width="680"/>
-</p>
-
 ### 에이전트 실행 로그 (사이드바)
 
 <p align="center">
