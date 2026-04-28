@@ -306,12 +306,6 @@ SECRET_KEY=your-jwt-secret
   <img src="../docs/images/multi_agent_chat.png" alt="채팅 인터페이스" width="680"/>
 </p>
 
-### 에이전트 실행 로그 (사이드바)
-
-<p align="center">
-  <img src="../docs/images/multi_agent_log.png" alt="에이전트 로그" width="680"/>
-</p>
-
 ### 중간지점 추천
 
 <p align="center">
